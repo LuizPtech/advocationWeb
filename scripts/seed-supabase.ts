@@ -1,4 +1,5 @@
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import { createId } from "@paralleldrive/cuid2";
 import { createClient } from "@supabase/supabase-js";
 
@@ -14,7 +15,8 @@ const supabase = createClient(url, secret, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-const PASSWORD = "T4RG3T3_PLUM14";
+const STAFF_PASSWORD_HASH =
+  "$2b$10$WJHVQGYQDWqGHHcmgb1vo.NBcCtU4ZPsP49clR9M0HxwjBWDrX5WK";
 
 const staffUsers = [
   {
@@ -78,7 +80,7 @@ async function main() {
     process.exit(1);
   }
 
-  const passwordHash = await bcrypt.hash(PASSWORD, 10);
+  const passwordHash = STAFF_PASSWORD_HASH;
 
   // Remove usuários de demonstração
   const demoEmails = ["admin@lauraeva.adv.br", "cliente@exemplo.com"];
