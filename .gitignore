@@ -39,6 +39,14 @@ yarn-error.log*
 /prisma/dev.db-journal
 /uploads
 
+# prisma init skill clutter
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+AGENTS.md
+CLAUDE.md
+
 # vercel
 .vercel
 
