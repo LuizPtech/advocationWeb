@@ -12,7 +12,14 @@ export type Brand = {
   whatsapp: string;
   address: string;
   city: string;
+  photoUrl: string;
+  heroImageUrl: string;
 };
+
+export const defaultPhotoUrl =
+  "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?auto=format&fit=crop&w=900&q=80";
+export const defaultHeroUrl =
+  "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80";
 
 export const defaultBrand: Brand = {
   name: "Dra. Laura Eva",
@@ -20,9 +27,9 @@ export const defaultBrand: Brand = {
   title: "Advogada",
   oab: "OAB/SP 000.000",
   tagline:
-    "Orientação jurídica clara, com acompanhamento humano em cada etapa.",
+    "Advocacia especializada em Direito das Famílias, Sucessões e Imobiliário.",
   headline:
-    "Advocacia em família, trabalho e relações de consumo — com clareza desde o primeiro contato.",
+    "Orientação jurídica clara, com acompanhamento humano em cada etapa.",
   about:
     "Advogada com atuação em Direito de Família, Direito do Trabalho e Direito do Consumidor. O atendimento começa com escuta, segue com análise objetiva das opções e permanece transparente no acompanhamento do caso — com linguagem clara e próximos passos bem definidos.",
   email: "contato@lauraeva.adv.br",
@@ -31,6 +38,8 @@ export const defaultBrand: Brand = {
   whatsapp: "https://wa.me/5511987654321",
   address: "São Paulo, SP",
   city: "São Paulo",
+  photoUrl: defaultPhotoUrl,
+  heroImageUrl: defaultHeroUrl,
 };
 
 /** @deprecated use getBrand() for editable settings */
@@ -39,44 +48,43 @@ export const brand = defaultBrand;
 export const practiceAreas = [
   {
     slug: "familia",
-    title: "Direito de Família",
-    short:
-      "Divórcio, guarda, pensão e inventário com cuidado e estratégia.",
+    title: "Direito das Famílias",
+    short: "Divórcio, guarda, pensão e proteção da sua família.",
     description:
-      "Atuação em divórcio consensual e litigioso, guarda compartilhada, pensão alimentícia, união estável e inventários. Cada família tem uma história — o atendimento é personalizado, com foco em soluções que reduzam desgaste emocional e jurídico.",
+      "Atuação em divórcio consensual e litigioso, guarda compartilhada, pensão alimentícia, união estável e reconhecimento de paternidade. Cada família tem uma história — o atendimento é personalizado, com foco em soluções que reduzam desgaste emocional e jurídico.",
     topics: [
       "Divórcio e dissolução de união estável",
       "Guarda e convivência familiar",
       "Pensão alimentícia",
+      "União estável",
+    ],
+  },
+  {
+    slug: "sucessoes",
+    title: "Sucessões",
+    short:
+      "Inventário, partilha e planejamento sucessório com clareza.",
+    description:
+      "Assessoria em inventários (judicial e extrajudicial), testamentos, partilha de bens e planejamento sucessório para preservar o patrimônio e evitar litígios entre herdeiros.",
+    topics: [
       "Inventário e partilha",
+      "Testamento",
+      "Planejamento sucessório",
+      "Holding familiar",
     ],
   },
   {
-    slug: "trabalho",
-    title: "Direito do Trabalho",
+    slug: "imobiliario",
+    title: "Direito Imobiliário",
     short:
-      "Defesa de direitos trabalhistas para quem precisa de segurança.",
+      "Compra, venda, locação e regularização com segurança.",
     description:
-      "Assessoria em demissões, verbas rescisórias, assédio, horas extras e acordos. Análise objetiva do caso, cálculo de direitos e acompanhamento até a resolução — judicial ou extrajudicial.",
+      "Análise de contratos de compra, venda e locação, regularização de imóveis, ações possessórias e revisão de cláusulas abusivas — para você negociar com tranquilidade.",
     topics: [
-      "Verbas rescisórias e FGTS",
-      "Horas extras e adicional noturno",
-      "Assédio moral e discriminação",
-      "Acordos e reclamações trabalhistas",
-    ],
-  },
-  {
-    slug: "consumidor",
-    title: "Direito do Consumidor",
-    short:
-      "Cobranças indevidas, contratos abusivos e falhas de serviço.",
-    description:
-      "Defesa em relações de consumo: bancos, planos de saúde, companhias aéreas, e-commerce e serviços essenciais. Negociação prévia quando possível; ação judicial quando necessário.",
-    topics: [
-      "Cobranças e negativação indevida",
-      "Planos de saúde e negativas de cobertura",
-      "Vícios de produto e serviço",
-      "Contratos e cláusulas abusivas",
+      "Contratos de compra e venda",
+      "Locação e despejo",
+      "Regularização de imóveis",
+      "Usucapião",
     ],
   },
 ] as const;
@@ -84,18 +92,50 @@ export const practiceAreas = [
 export const howItWorks = [
   {
     step: "01",
+    icon: "message",
     title: "Contato inicial",
-    text: "Você descreve a situação pelo formulário, WhatsApp ou agendamento. Sem compromisso de contratação.",
+    text: "Envie sua situação pelo formulário ou WhatsApp. Retorno em horário comercial, sem compromisso.",
   },
   {
     step: "02",
-    title: "Consulta",
-    text: "Análise do caso, orientação jurídica e definição do caminho — online ou presencial.",
+    icon: "calendar",
+    title: "Consulta agendada",
+    text: "Atendimento online ou presencial, com hora marcada. Análise clara do seu caso.",
   },
   {
     step: "03",
-    title: "Acompanhamento",
-    text: "Documentos, prazos e próximos passos ficam organizados na área do cliente.",
+    icon: "shield",
+    title: "Estratégia definida",
+    text: "Planejamento jurídico personalizado, com prazos, custos e caminhos bem explicados.",
+  },
+  {
+    step: "04",
+    icon: "check",
+    title: "Acompanhamento contínuo",
+    text: "Documentos, mensagens e status do caso disponíveis na área do cliente.",
+  },
+] as const;
+
+export const faqDefault = [
+  {
+    q: "É preciso pagar para a primeira consulta?",
+    a: "A primeira conversa para entender o caso pode ser gratuita, dependendo da complexidade. Após essa triagem, apresento os honorários de forma transparente antes de qualquer contratação.",
+  },
+  {
+    q: "Vocês atendem online?",
+    a: "Sim. Faço atendimento por videoconferência para clientes de qualquer localidade, com hora marcada. Presencialmente, atendo em São Paulo.",
+  },
+  {
+    q: "Como acompanho meu processo?",
+    a: "Depois da contratação você recebe acesso à área do cliente, com status do caso, documentos, mensagens e honorários organizados em um só lugar.",
+  },
+  {
+    q: "Quais formas de pagamento aceitas?",
+    a: "PIX, transferência e cartão. Honorários são apresentados por escrito antes de fechar contrato, com opção de parcelamento em alguns casos.",
+  },
+  {
+    q: "Como funciona o sigilo do meu caso?",
+    a: "Todo atendimento é confidencial, protegido pela advocacia e pela LGPD. Documentos ficam em armazenamento privado e apenas você e a advogada têm acesso.",
   },
 ] as const;
 
@@ -122,11 +162,25 @@ export function toBrandFromSettings(settings: {
   whatsapp: string;
   address: string;
   city: string;
+  photoUrl?: string | null;
+  heroImageUrl?: string | null;
 }): Brand {
   const digits = whatsappDigits(settings.phone);
   return {
-    ...settings,
+    name: settings.name,
+    shortName: settings.shortName,
+    title: settings.title,
+    oab: settings.oab,
+    tagline: settings.tagline,
+    headline: settings.headline,
+    about: settings.about,
+    email: settings.email,
+    phone: settings.phone,
+    address: settings.address,
+    city: settings.city,
     phoneHref: digits,
     whatsapp: settings.whatsapp || (digits ? `https://wa.me/${digits}` : ""),
+    photoUrl: settings.photoUrl || defaultPhotoUrl,
+    heroImageUrl: settings.heroImageUrl || defaultHeroUrl,
   };
 }

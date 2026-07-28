@@ -1,5 +1,4 @@
 import "dotenv/config";
-import bcrypt from "bcryptjs";
 import { createId } from "@paralleldrive/cuid2";
 import { createClient } from "@supabase/supabase-js";
 
@@ -15,68 +14,99 @@ const supabase = createClient(url, secret, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
+const STAFF_PASSWORD_HASH =
+  "$2b$10$WJHVQGYQDWqGHHcmgb1vo.NBcCtU4ZPsP49clR9M0HxwjBWDrX5WK";
+
+const staffUsers = [
+  {
+    email: "lauraadv@lauraeva.adv.br",
+    name: "Dra. Laura Eva",
+    role: "ADMIN",
+  },
+  {
+    email: "luizphelipe@lauraeva.adv.br",
+    name: "Luiz Phelipe",
+    role: "ADMIN",
+  },
+] as const;
+
+async function upsertUser(input: {
+  email: string;
+  name: string;
+  role: string;
+  passwordHash: string;
+}) {
+  const { data: existing } = await supabase
+    .from("users")
+    .select("id")
+    .eq("email", input.email)
+    .maybeSingle();
+
+  if (existing?.id) {
+    const { error } = await supabase
+      .from("users")
+      .update({
+        name: input.name,
+        password_hash: input.passwordHash,
+        role: input.role,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", existing.id);
+    if (error) throw error;
+    return existing.id as string;
+  }
+
+  const id = createId();
+  const { error } = await supabase.from("users").insert({
+    id,
+    name: input.name,
+    email: input.email,
+    password_hash: input.passwordHash,
+    role: input.role,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) throw error;
+  return id;
+}
+
 async function main() {
   const probe = await supabase.from("users").select("id").limit(1);
   if (probe.error) {
     console.error("\nTabelas ainda não existem no Supabase.");
-    console.error(
-      "1) Abra o SQL Editor do projeto e execute o arquivo supabase/schema.sql",
-    );
-    console.error(
-      "2) Depois rode novamente: npm run db:seed\n",
-    );
+    console.error("1) Execute supabase/schema.sql no SQL Editor");
+    console.error("2) Depois: npm run db:seed\n");
     console.error("Erro:", probe.error.message);
     process.exit(1);
   }
 
-  const adminHash = await bcrypt.hash("admin123", 10);
-  const clientHash = await bcrypt.hash("cliente123", 10);
+  const passwordHash = STAFF_PASSWORD_HASH;
 
-  const { data: existingAdmin } = await supabase
-    .from("users")
-    .select("*")
-    .eq("email", "admin@lauraeva.adv.br")
-    .maybeSingle();
-
-  let adminId = existingAdmin?.id as string | undefined;
-  if (!adminId) {
-    adminId = createId();
-    const { error } = await supabase.from("users").insert({
-      id: adminId,
-      name: "Dra. Laura Eva",
-      email: "admin@lauraeva.adv.br",
-      password_hash: adminHash,
-      role: "ADMIN",
-      phone: "(11) 98765-4321",
-      updated_at: new Date().toISOString(),
-    });
-    if (error) throw error;
-  } else {
-    await supabase
+  // Remove usuários de demonstração
+  const demoEmails = ["admin@lauraeva.adv.br", "cliente@exemplo.com"];
+  for (const email of demoEmails) {
+    const { data: demo } = await supabase
       .from("users")
-      .update({ name: "Dra. Laura Eva", password_hash: adminHash })
-      .eq("id", adminId);
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+    if (demo?.id) {
+      await supabase.from("messages").delete().eq("author_id", demo.id);
+      await supabase.from("notes").delete().eq("author_id", demo.id);
+      await supabase.from("documents").delete().eq("uploaded_by_id", demo.id);
+      await supabase.from("payments").delete().eq("client_id", demo.id);
+      await supabase.from("bookings").delete().eq("user_id", demo.id);
+      await supabase.from("cases").delete().eq("client_id", demo.id);
+      await supabase.from("users").delete().eq("id", demo.id);
+    }
   }
 
-  const { data: existingClient } = await supabase
-    .from("users")
-    .select("*")
-    .eq("email", "cliente@exemplo.com")
-    .maybeSingle();
-
-  let clientId = existingClient?.id as string | undefined;
-  if (!clientId) {
-    clientId = createId();
-    const { error } = await supabase.from("users").insert({
-      id: clientId,
-      name: "Ana Souza",
-      email: "cliente@exemplo.com",
-      password_hash: clientHash,
-      role: "CLIENT",
-      phone: "(11) 91234-5678",
-      updated_at: new Date().toISOString(),
+  for (const user of staffUsers) {
+    await upsertUser({
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      passwordHash,
     });
-    if (error) throw error;
   }
 
   await supabase.from("site_settings").upsert({
@@ -99,81 +129,6 @@ async function main() {
     updated_at: new Date().toISOString(),
   });
 
-  const { data: existingCase } = await supabase
-    .from("cases")
-    .select("*")
-    .eq("client_id", clientId)
-    .maybeSingle();
-
-  let caseId = existingCase?.id as string | undefined;
-  if (!caseId) {
-    caseId = createId();
-    const { error } = await supabase.from("cases").insert({
-      id: caseId,
-      title: "Divórcio consensual",
-      description:
-        "Acompanhamento de divórcio consensual com partilha de bens e regulamentação de convivência.",
-      area: "familia",
-      status: "IN_PROGRESS",
-      next_step: "Enviar certidão de casamento atualizada",
-      deadline: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(),
-      tags: JSON.stringify(["divórcio", "consensual"]),
-      client_id: clientId,
-      updated_at: new Date().toISOString(),
-    });
-    if (error) throw error;
-  }
-
-  const { count: messageCount } = await supabase
-    .from("messages")
-    .select("*", { count: "exact", head: true })
-    .eq("case_id", caseId);
-
-  if (!messageCount) {
-    await supabase.from("messages").insert([
-      {
-        id: createId(),
-        case_id: caseId,
-        author_id: adminId,
-        body: "Olá, Ana. Seu caso foi aberto. Assim que os documentos chegarem, avanço com a minuta do acordo.",
-      },
-      {
-        id: createId(),
-        case_id: caseId,
-        author_id: clientId,
-        body: "Obrigada, doutora. Vou digitalizar a certidão e enviar ainda esta semana.",
-      },
-    ]);
-  }
-
-  const { count: paymentCount } = await supabase
-    .from("payments")
-    .select("*", { count: "exact", head: true })
-    .eq("client_id", clientId);
-
-  if (!paymentCount) {
-    await supabase.from("payments").insert([
-      {
-        id: createId(),
-        description: "Honorários — consulta inicial e abertura do caso",
-        amount: 1200,
-        status: "PAID",
-        paid_at: new Date().toISOString(),
-        case_id: caseId,
-        client_id: clientId,
-      },
-      {
-        id: createId(),
-        description: "Honorários — elaboração de acordo",
-        amount: 2500,
-        status: "PENDING",
-        due_date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10).toISOString(),
-        case_id: caseId,
-        client_id: clientId,
-      },
-    ]);
-  }
-
   const posts = [
     {
       slug: "divorcio-consensual-passo-a-passo",
@@ -181,15 +136,8 @@ async function main() {
       excerpt:
         "Documentos, prazos e o que muda quando há filhos menores envolvidos.",
       area: "familia",
-      content: `O divórcio consensual é o caminho mais célere quando as partes estão de acordo sobre partilha, guarda e pensão.
-
-## Documentos usuais
-- Certidão de casamento atualizada
-- Documentos pessoais
-- Comprovantes de renda, quando há pensão
-- Relação de bens, se houver partilha
-
-Este conteúdo é informativo e não substitui consulta jurídica personalizada.`,
+      content:
+        "O divórcio consensual é o caminho mais célere quando as partes estão de acordo. Este conteúdo é informativo e não substitui consulta jurídica personalizada.",
     },
     {
       slug: "verbas-rescisorias-checklist",
@@ -197,9 +145,8 @@ Este conteúdo é informativo e não substitui consulta jurídica personalizada.
       excerpt:
         "O que conferir no termo de rescisão e quando buscar orientação.",
       area: "trabalho",
-      content: `Ao ser demitido, confira saldo de salário, férias proporcionais, 13º, aviso prévio e FGTS.
-
-Guarde holerites, cartões de ponto e comunicações. Uma consulta rápida pode evitar perda de direitos.`,
+      content:
+        "Ao ser demitido, confira saldo de salário, férias proporcionais, 13º, aviso prévio e FGTS.",
     },
     {
       slug: "negativacao-indevida-o-que-fazer",
@@ -207,9 +154,8 @@ Guarde holerites, cartões de ponto e comunicações. Uma consulta rápida pode 
       excerpt:
         "Como agir quando seu nome é negativado sem dívida legítima.",
       area: "consumidor",
-      content: `Se o nome foi negativado indevidamente, reúna comprovantes de pagamento ou ausência de relação contratual.
-
-Não ignore prazos de contestação. Orientação jurídica antecipa a melhor estratégia.`,
+      content:
+        "Reúna comprovantes e busque orientação jurídica para exclusão e eventual indenização.",
     },
   ];
 
@@ -232,9 +178,10 @@ Não ignore prazos de contestação. Orientação jurídica antecipa a melhor es
     }
   }
 
-  console.log("Seed Supabase concluído.");
-  console.log("Admin: admin@lauraeva.adv.br / admin123");
-  console.log("Cliente: cliente@exemplo.com / cliente123");
+  console.log("Seed concluído.");
+  console.log("Usuários admin:");
+  console.log("- lauraadv@lauraeva.adv.br");
+  console.log("- luizphelipe@lauraeva.adv.br");
 }
 
 main().catch((error) => {

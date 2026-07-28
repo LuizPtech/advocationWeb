@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -27,18 +27,21 @@ export function LoginForm() {
       redirect: false,
     });
 
-    setLoading(false);
-
     if (result?.error) {
+      setLoading(false);
       setError("E-mail ou senha inválidos.");
       return;
     }
 
-    if (email.toLowerCase().startsWith("admin@")) {
-      router.push("/admin");
-    } else {
-      router.push(callbackUrl);
-    }
+    const session = await getSession();
+    const destination =
+      session?.user?.role === "ADMIN"
+        ? "/admin"
+        : callbackUrl.startsWith("/")
+          ? callbackUrl
+          : "/area-cliente";
+
+    router.push(destination);
     router.refresh();
   }
 
@@ -63,13 +66,7 @@ export function LoginForm() {
         {loading ? "Entrando..." : "Entrar"}
       </button>
       <p className="text-sm text-muted">
-        Demonstração — cliente:{" "}
-        <code>cliente@exemplo.com</code> / <code>cliente123</code>
-        <br />
-        Admin: <code>admin@lauraeva.adv.br</code> / <code>admin123</code>
-      </p>
-      <p className="text-sm text-muted">
-            Ainda não é cliente?{" "}
+        Ainda não é cliente?{" "}
         <Link href="/agendar" className="text-accent">
           Agende uma consulta
         </Link>

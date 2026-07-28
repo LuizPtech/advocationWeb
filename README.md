@@ -44,20 +44,28 @@ SUPABASE_JWKS_URL=...
 
 ## Deploy na Vercel
 
-1. Execute `supabase/schema.sql` no SQL Editor e rode `npm run db:seed` (localmente, uma vez).
-2. Em [vercel.com/new](https://vercel.com/new), importe o repositório `LuizPtech/advocationWeb`.
-3. Em **Environment Variables**, cadastre:
+Projeto já conectado: [advocation-web](https://vercel.com/luiz-ph-tech/advocation-web)  
+URL: https://advocation-web.vercel.app
+
+### Variáveis de ambiente (obrigatório)
+
+Em **Project → Settings → Environment Variables**, cadastre para Production/Preview:
 
 | Nome | Valor |
 |------|--------|
-| `AUTH_SECRET` | string longa aleatória (ex.: `openssl rand -base64 32`) |
+| `AUTH_SECRET` | string longa aleatória (`openssl rand -base64 32`) |
 | `AUTH_TRUST_HOST` | `true` |
-| `NEXT_PUBLIC_APP_URL` | URL do projeto (ex.: `https://seu-app.vercel.app`) |
+| `NEXT_PUBLIC_APP_URL` | `https://advocation-web.vercel.app` |
 | `SUPABASE_URL` | `https://yqzofdehjsskrojditwy.supabase.co` |
 | `SUPABASE_PUBLISHABLE_KEY` | sua publishable key |
 | `SUPABASE_SECRET_KEY` | sua secret key |
 | `SUPABASE_JWKS_URL` | `https://yqzofdehjsskrojditwy.supabase.co/auth/v1/.well-known/jwks.json` |
 
-4. Branch de produção: a que contém o app (ex.: `cursor/plataforma-advocacia-mvp-80ab` ou `main` após o merge).
-5. Deploy → aguarde o build → abra a URL da Vercel.
-6. Atualize `NEXT_PUBLIC_APP_URL` com a URL final e faça **Redeploy**.
+Depois de salvar, faça **Redeploy**.
+
+### Usuários admin
+
+- `lauraadv@lauraeva.adv.br`
+- `luizphelipe@lauraeva.adv.br`
+
+SQL de criação: [`supabase/create-users.sql`](supabase/create-users.sql)

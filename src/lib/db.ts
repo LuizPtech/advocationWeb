@@ -134,6 +134,8 @@ export type SettingsRow = {
   whatsapp: string;
   address: string;
   city: string;
+  photoUrl: string | null;
+  heroImageUrl: string | null;
   updatedAt: string;
 };
 
@@ -290,6 +292,8 @@ function mapSettings(row: Record<string, unknown>): SettingsRow {
     whatsapp: String(row.whatsapp),
     address: String(row.address),
     city: String(row.city),
+    photoUrl: (row.photo_url as string) || null,
+    heroImageUrl: (row.hero_image_url as string) || null,
     updatedAt: String(row.updated_at),
   };
 }
@@ -873,8 +877,10 @@ export const db = {
       whatsapp: string;
       address: string;
       city: string;
+      photoUrl?: string | null;
+      heroImageUrl?: string | null;
     }) {
-      const row = {
+      const baseRow: Record<string, unknown> = {
         id: "default",
         name: input.name,
         short_name: input.shortName,
@@ -890,12 +896,27 @@ export const db = {
         city: input.city,
         updated_at: new Date().toISOString(),
       };
-      const { data, error } = await supabaseAdmin
+      const rowWithPhotos: Record<string, unknown> = {
+        ...baseRow,
+        photo_url: input.photoUrl || null,
+        hero_image_url: input.heroImageUrl || null,
+      };
+
+      const attempt = await supabaseAdmin
         .from("site_settings")
-        .upsert(row)
+        .upsert(rowWithPhotos)
         .select("*")
         .single();
-      return mapSettings(requireData(data, error));
+
+      if (attempt.error?.code === "42703") {
+        const retry = await supabaseAdmin
+          .from("site_settings")
+          .upsert(baseRow)
+          .select("*")
+          .single();
+        return mapSettings(requireData(retry.data, retry.error));
+      }
+      return mapSettings(requireData(attempt.data, attempt.error));
     },
   },
 };
