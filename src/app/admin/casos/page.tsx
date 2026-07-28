@@ -2,21 +2,15 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { practiceAreas } from "@/lib/brand";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { caseStatusLabel, formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminCasosPage() {
   const [cases, clients] = await Promise.all([
-    prisma.case.findMany({
-      include: { client: true },
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.user.findMany({
-      where: { role: "CLIENT" },
-      orderBy: { name: "asc" },
-    }),
+    db.cases.list(),
+    db.users.listClients(),
   ]);
 
   return (
@@ -32,16 +26,12 @@ export default async function AdminCasosPage() {
           const nextStep = String(formData.get("nextStep") || "");
           if (!title || !clientId) return;
 
-          await prisma.case.create({
-            data: {
-              title,
-              clientId,
-              area,
-              description: description || null,
-              nextStep: nextStep || null,
-              status: "OPEN",
-              tags: "[]",
-            },
+          await db.cases.create({
+            title,
+            clientId,
+            area,
+            description: description || null,
+            nextStep: nextStep || null,
           });
           revalidatePath("/admin/casos");
         }}
@@ -96,7 +86,7 @@ export default async function AdminCasosPage() {
             <div>
               <h3 className="text-lg font-semibold">{item.title}</h3>
               <p className="text-sm text-muted">
-                {item.client.name} · {caseStatusLabel[item.status]}
+                {item.client?.name} · {caseStatusLabel[item.status]}
                 {item.deadline ? ` · prazo ${formatDate(item.deadline)}` : ""}
               </p>
             </div>

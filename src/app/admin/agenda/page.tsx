@@ -1,14 +1,12 @@
 import { revalidatePath } from "next/cache";
 import { AdminShell } from "@/components/admin/AdminShell";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { bookingStatusLabel, formatDateTime } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminAgendaPage() {
-  const bookings = await prisma.booking.findMany({
-    orderBy: { scheduledAt: "asc" },
-  });
+  const bookings = await db.bookings.list();
 
   return (
     <AdminShell title="Agenda de consultas">
@@ -43,11 +41,10 @@ export default async function AdminAgendaPage() {
                   <form
                     action={async (formData) => {
                       "use server";
-                      const status = String(formData.get("status"));
-                      await prisma.booking.update({
-                        where: { id: booking.id },
-                        data: { status: status as never },
-                      });
+                      await db.bookings.updateStatus(
+                        booking.id,
+                        String(formData.get("status")),
+                      );
                       revalidatePath("/admin/agenda");
                     }}
                     className="flex gap-2"

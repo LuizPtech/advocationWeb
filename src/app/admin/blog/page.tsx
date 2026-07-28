@@ -2,7 +2,7 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { practiceAreas } from "@/lib/brand";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -17,9 +17,7 @@ function slugify(value: string) {
 }
 
 export default async function AdminBlogPage() {
-  const posts = await prisma.blogPost.findMany({
-    orderBy: { publishedAt: "desc" },
-  });
+  const posts = await db.blog.listAll();
 
   return (
     <AdminShell title="Conteúdo do blog">
@@ -34,18 +32,15 @@ export default async function AdminBlogPage() {
           if (!title || !excerpt || !content) return;
 
           let slug = slugify(title);
-          const exists = await prisma.blogPost.findUnique({ where: { slug } });
+          const exists = await db.blog.bySlug(slug);
           if (exists) slug = `${slug}-${Date.now()}`;
 
-          await prisma.blogPost.create({
-            data: {
-              title,
-              excerpt,
-              content,
-              area,
-              slug,
-              published: true,
-            },
+          await db.blog.create({
+            title,
+            excerpt,
+            content,
+            area,
+            slug,
           });
           revalidatePath("/admin/blog");
           revalidatePath("/blog");
@@ -100,10 +95,7 @@ export default async function AdminBlogPage() {
               <form
                 action={async () => {
                   "use server";
-                  await prisma.blogPost.update({
-                    where: { id: post.id },
-                    data: { published: !post.published },
-                  });
+                  await db.blog.setPublished(post.id, !post.published);
                   revalidatePath("/admin/blog");
                   revalidatePath("/blog");
                 }}

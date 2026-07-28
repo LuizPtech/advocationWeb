@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import {
   caseStatusLabel,
   formatCurrency,
@@ -18,18 +18,15 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminCasoDetailPage({ params }: Props) {
   const { id } = await params;
-  const item = await prisma.case.findUnique({
-    where: { id },
-    include: {
-      client: true,
-      documents: { orderBy: { createdAt: "desc" } },
-      messages: { include: { author: true }, orderBy: { createdAt: "asc" } },
-      notes: { include: { author: true }, orderBy: { createdAt: "desc" } },
-      payments: { orderBy: { createdAt: "desc" } },
-    },
-  });
-
+  const item = await db.cases.findById(id);
   if (!item) notFound();
+
+  const [documents, messages, notes, payments] = await Promise.all([
+    db.documents.byCase(item.id),
+    db.messages.byCase(item.id),
+    db.notes.byCase(item.id),
+    db.payments.byCase(item.id),
+  ]);
 
   return (
     <AdminShell title={item.title}>
@@ -40,28 +37,25 @@ export default async function AdminCasoDetailPage({ params }: Props) {
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="panel space-y-4 p-6">
           <p className="text-sm text-muted">
-            Cliente: {item.client.name} ({item.client.email})
+            Cliente: {item.client?.name} ({item.client?.email})
           </p>
           <form
             className="space-y-4"
             action={async (formData) => {
               "use server";
-              await prisma.case.update({
-                where: { id: item.id },
-                data: {
-                  status: String(formData.get("status")) as never,
-                  nextStep: String(formData.get("nextStep") || "") || null,
-                  description: String(formData.get("description") || "") || null,
-                  deadline: formData.get("deadline")
-                    ? new Date(String(formData.get("deadline")))
-                    : null,
-                  tags: JSON.stringify(
-                    String(formData.get("tags") || "")
-                      .split(",")
-                      .map((t) => t.trim())
-                      .filter(Boolean),
-                  ),
-                },
+              await db.cases.update(item.id, {
+                status: String(formData.get("status")),
+                nextStep: String(formData.get("nextStep") || "") || null,
+                description: String(formData.get("description") || "") || null,
+                deadline: formData.get("deadline")
+                  ? new Date(String(formData.get("deadline"))).toISOString()
+                  : null,
+                tags: JSON.stringify(
+                  String(formData.get("tags") || "")
+                    .split(",")
+                    .map((t) => t.trim())
+                    .filter(Boolean),
+                ),
               });
               revalidatePath(`/admin/casos/${item.id}`);
             }}
@@ -91,9 +85,7 @@ export default async function AdminCasoDetailPage({ params }: Props) {
                 name="deadline"
                 type="date"
                 defaultValue={
-                  item.deadline
-                    ? formatDate(item.deadline, "yyyy-MM-dd")
-                    : ""
+                  item.deadline ? formatDate(item.deadline, "yyyy-MM-dd") : ""
                 }
               />
             </div>
@@ -132,12 +124,10 @@ export default async function AdminCasoDetailPage({ params }: Props) {
               if (!session?.user) return;
               const body = String(formData.get("body") || "").trim();
               if (!body) return;
-              await prisma.note.create({
-                data: {
-                  body,
-                  caseId: item.id,
-                  authorId: session.user.id,
-                },
+              await db.notes.create({
+                body,
+                caseId: item.id,
+                authorId: session.user.id,
               });
               revalidatePath(`/admin/casos/${item.id}`);
             }}
@@ -155,11 +145,11 @@ export default async function AdminCasoDetailPage({ params }: Props) {
             </button>
           </form>
           <ul className="space-y-3 text-sm">
-            {item.notes.map((note) => (
+            {notes.map((note) => (
               <li key={note.id} className="border-t border-line pt-3">
                 <p>{note.body}</p>
                 <p className="mt-1 text-xs text-muted">
-                  {note.author.name} · {formatDateTime(note.createdAt)}
+                  {note.author?.name} · {formatDateTime(note.createdAt)}
                 </p>
               </li>
             ))}
@@ -169,14 +159,11 @@ export default async function AdminCasoDetailPage({ params }: Props) {
         <section className="panel space-y-4 p-6">
           <h2 className="font-display text-2xl">Documentos</h2>
           <ul className="space-y-2 text-sm">
-            {item.documents.map((doc) => (
+            {documents.map((doc) => (
               <li key={doc.id}>
                 <a href={`/api/documents/${doc.id}`} className="text-accent">
                   {doc.name}
                 </a>
-                {!doc.visibleToClient ? (
-                  <span className="ml-2 text-xs text-muted">(interno)</span>
-                ) : null}
               </li>
             ))}
           </ul>
@@ -197,9 +184,9 @@ export default async function AdminCasoDetailPage({ params }: Props) {
         <section className="panel space-y-4 p-6">
           <h2 className="font-display text-2xl">Mensagens com o cliente</h2>
           <div className="max-h-64 space-y-3 overflow-y-auto text-sm">
-            {item.messages.map((msg) => (
+            {messages.map((msg) => (
               <div key={msg.id} className="rounded bg-paper p-3">
-                <p className="font-semibold">{msg.author.name}</p>
+                <p className="font-semibold">{msg.author?.name}</p>
                 <p className="text-muted">{msg.body}</p>
               </div>
             ))}
@@ -211,12 +198,10 @@ export default async function AdminCasoDetailPage({ params }: Props) {
               if (!session?.user) return;
               const body = String(formData.get("body") || "").trim();
               if (!body) return;
-              await prisma.message.create({
-                data: {
-                  body,
-                  caseId: item.id,
-                  authorId: session.user.id,
-                },
+              await db.messages.create({
+                body,
+                caseId: item.id,
+                authorId: session.user.id,
               });
               revalidatePath(`/admin/casos/${item.id}`);
             }}
@@ -243,17 +228,14 @@ export default async function AdminCasoDetailPage({ params }: Props) {
               const description = String(formData.get("description") || "");
               const amount = Number(formData.get("amount") || 0);
               if (!description || !amount) return;
-              await prisma.payment.create({
-                data: {
-                  description,
-                  amount,
-                  status: "PENDING",
-                  caseId: item.id,
-                  clientId: item.clientId,
-                  dueDate: formData.get("dueDate")
-                    ? new Date(String(formData.get("dueDate")))
-                    : null,
-                },
+              await db.payments.create({
+                description,
+                amount,
+                caseId: item.id,
+                clientId: item.clientId,
+                dueDate: formData.get("dueDate")
+                  ? new Date(String(formData.get("dueDate"))).toISOString()
+                  : null,
               });
               revalidatePath(`/admin/casos/${item.id}`);
             }}
@@ -282,7 +264,7 @@ export default async function AdminCasoDetailPage({ params }: Props) {
             </button>
           </form>
           <ul className="space-y-2 text-sm">
-            {item.payments.map((payment) => (
+            {payments.map((payment) => (
               <li
                 key={payment.id}
                 className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3"
@@ -294,10 +276,7 @@ export default async function AdminCasoDetailPage({ params }: Props) {
                 <form
                   action={async () => {
                     "use server";
-                    await prisma.payment.update({
-                      where: { id: payment.id },
-                      data: { status: "PAID", paidAt: new Date() },
-                    });
+                    await db.payments.markPaid(payment.id);
                     revalidatePath(`/admin/casos/${item.id}`);
                   }}
                 >

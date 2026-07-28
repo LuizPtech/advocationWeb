@@ -1,7 +1,7 @@
-import { readFile } from "fs/promises";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
+import { supabaseAdmin } from "@/lib/supabase";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -12,10 +12,7 @@ export async function GET(_request: Request, { params }: Props) {
   }
 
   const { id } = await params;
-  const doc = await prisma.document.findUnique({
-    where: { id },
-    include: { case: true },
-  });
+  const doc = await db.documents.findById(id);
 
   if (!doc) {
     return NextResponse.json({ error: "Documento não encontrado." }, { status: 404 });
@@ -28,15 +25,19 @@ export async function GET(_request: Request, { params }: Props) {
     return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
   }
 
-  try {
-    const file = await readFile(doc.path);
-    return new NextResponse(file, {
-      headers: {
-        "Content-Type": doc.mimeType,
-        "Content-Disposition": `attachment; filename="${encodeURIComponent(doc.filename)}"`,
-      },
-    });
-  } catch {
+  const { data, error } = await supabaseAdmin.storage
+    .from("documents")
+    .download(doc.path);
+
+  if (error || !data) {
     return NextResponse.json({ error: "Arquivo ausente." }, { status: 404 });
   }
+
+  const buffer = Buffer.from(await data.arrayBuffer());
+  return new NextResponse(buffer, {
+    headers: {
+      "Content-Type": doc.mimeType,
+      "Content-Disposition": `attachment; filename="${encodeURIComponent(doc.filename)}"`,
+    },
+  });
 }

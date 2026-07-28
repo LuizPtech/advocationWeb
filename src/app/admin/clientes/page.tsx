@@ -1,17 +1,13 @@
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { AdminShell } from "@/components/admin/AdminShell";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminClientesPage() {
-  const clients = await prisma.user.findMany({
-    where: { role: "CLIENT" },
-    include: { _count: { select: { cases: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+  const clients = await db.users.listClients();
 
   return (
     <AdminShell title="Clientes">
@@ -28,14 +24,12 @@ export default async function AdminClientesPage() {
           if (!name || !email) return;
 
           const passwordHash = await bcrypt.hash(password, 10);
-          await prisma.user.create({
-            data: {
-              name,
-              email,
-              phone: phone || null,
-              passwordHash,
-              role: "CLIENT",
-            },
+          await db.users.create({
+            name,
+            email,
+            phone: phone || null,
+            passwordHash,
+            role: "CLIENT",
           });
           revalidatePath("/admin/clientes");
         }}
@@ -81,7 +75,7 @@ export default async function AdminClientesPage() {
                   <br />
                   <span className="text-muted">{client.phone}</span>
                 </td>
-                <td className="p-4">{client._count.cases}</td>
+                <td className="p-4">{client._count?.cases ?? 0}</td>
                 <td className="p-4">{formatDate(client.createdAt)}</td>
               </tr>
             ))}

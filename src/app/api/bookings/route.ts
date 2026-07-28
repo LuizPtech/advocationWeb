@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -34,13 +34,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const conflict = await prisma.booking.findFirst({
-      where: {
-        scheduledAt,
-        status: { in: ["PENDING", "CONFIRMED"] },
-      },
-    });
-
+    const conflict = await db.bookings.findConflict(scheduledAt.toISOString());
     if (conflict) {
       return NextResponse.json(
         { error: "Este horário acabou de ser reservado. Escolha outro." },
@@ -48,23 +42,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: data.email.toLowerCase() },
-    });
+    const user = await db.users.findByEmail(data.email);
 
-    const booking = await prisma.booking.create({
-      data: {
-        name: data.name,
-        email: data.email.toLowerCase(),
-        phone: data.phone,
-        type: data.type,
-        area: data.area,
-        notes: data.notes || null,
-        scheduledAt,
-        lgpdConsent: true,
-        status: "PENDING",
-        userId: user?.id,
-      },
+    const booking = await db.bookings.create({
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      type: data.type,
+      area: data.area,
+      notes: data.notes || null,
+      scheduledAt: scheduledAt.toISOString(),
+      lgpdConsent: true,
+      userId: user?.id,
     });
 
     return NextResponse.json({ ok: true, id: booking.id });

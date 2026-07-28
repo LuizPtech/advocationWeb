@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import {
   caseStatusLabel,
   formatCurrency,
@@ -19,30 +19,18 @@ export default async function AreaClientePage() {
     redirect("/admin");
   }
 
-  const [cases, payments, bookings] = await Promise.all([
-    prisma.case.findMany({
-      where: { clientId: session.user.id },
-      include: {
-        documents: {
-          where: { visibleToClient: true },
-          orderBy: { createdAt: "desc" },
-        },
-        messages: {
-          include: { author: true },
-          orderBy: { createdAt: "asc" },
-        },
-      },
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.payment.findMany({
-      where: { clientId: session.user.id },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.booking.findMany({
-      where: { email: session.user.email || "" },
-      orderBy: { scheduledAt: "desc" },
-      take: 5,
-    }),
+  const caseList = await db.cases.byClient(session.user.id);
+  const cases = await Promise.all(
+    caseList.map(async (item) => ({
+      ...item,
+      documents: await db.documents.byCase(item.id, true),
+      messages: await db.messages.byCase(item.id),
+    })),
+  );
+
+  const [payments, bookings] = await Promise.all([
+    db.payments.byClient(session.user.id),
+    db.bookings.byEmail(session.user.email || "", 5),
   ]);
 
   return (
@@ -133,7 +121,7 @@ export default async function AreaClientePage() {
                         </ul>
                         <form
                           className="mt-3 space-y-2"
-                          action={`/api/documents/upload`}
+                          action="/api/documents/upload"
                           method="post"
                           encType="multipart/form-data"
                         >
@@ -158,7 +146,7 @@ export default async function AreaClientePage() {
                           {item.messages.map((msg) => (
                             <div key={msg.id} className="rounded bg-paper p-3">
                               <p className="font-semibold text-ink">
-                                {msg.author.name}
+                                {msg.author?.name}
                               </p>
                               <p className="text-muted">{msg.body}</p>
                               <p className="mt-1 text-xs text-muted">
@@ -174,12 +162,10 @@ export default async function AreaClientePage() {
                             if (!body) return;
                             const sessionInner = await auth();
                             if (!sessionInner?.user) return;
-                            await prisma.message.create({
-                              data: {
-                                body,
-                                caseId: item.id,
-                                authorId: sessionInner.user.id,
-                              },
+                            await db.messages.create({
+                              body,
+                              caseId: item.id,
+                              authorId: sessionInner.user.id,
                             });
                           }}
                           className="mt-3 space-y-2"

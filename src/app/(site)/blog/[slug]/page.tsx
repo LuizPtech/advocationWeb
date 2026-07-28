@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { formatDate } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -10,13 +10,13 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = await prisma.blogPost.findUnique({ where: { slug } });
+  const post = await db.blog.bySlug(slug);
   return { title: post?.title ?? "Artigo" };
 }
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const post = await prisma.blogPost.findUnique({ where: { slug } });
+  const post = await db.blog.bySlug(slug);
   if (!post || !post.published) notFound();
 
   return (

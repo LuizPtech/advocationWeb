@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import {
   bookingStatusLabel,
   caseStatusLabel,
@@ -27,24 +27,16 @@ export default async function AdminPage() {
     redirect("/login?callbackUrl=/admin");
   }
 
-  const [leads, bookings, cases, clients] = await Promise.all([
-    prisma.lead.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
-    prisma.booking.findMany({ orderBy: { scheduledAt: "asc" }, take: 5 }),
-    prisma.case.findMany({
-      include: { client: true },
-      orderBy: { updatedAt: "desc" },
-      take: 5,
-    }),
-    prisma.user.count({ where: { role: "CLIENT" } }),
-  ]);
-
-  const pendingBookings = await prisma.booking.count({
-    where: { status: "PENDING" },
-  });
-  const openCases = await prisma.case.count({
-    where: { status: { not: "CLOSED" } },
-  });
-  const newLeads = await prisma.lead.count({ where: { status: "NEW" } });
+  const [leads, bookings, cases, clients, pendingBookings, openCases, newLeads] =
+    await Promise.all([
+      db.leads.recent(5),
+      db.bookings.upcoming(5),
+      db.cases.recent(5),
+      db.users.countClients(),
+      db.bookings.countPending(),
+      db.cases.countOpen(),
+      db.leads.countNew(),
+    ]);
 
   return (
     <div className="dashboard-shell bg-paper">
@@ -149,13 +141,10 @@ export default async function AdminPage() {
                   <div>
                     <p className="font-medium">{item.title}</p>
                     <p className="text-muted">
-                      {item.client.name} · {caseStatusLabel[item.status]}
+                      {item.client?.name} · {caseStatusLabel[item.status]}
                     </p>
                   </div>
-                  <Link
-                    href={`/admin/casos/${item.id}`}
-                    className="text-accent"
-                  >
+                  <Link href={`/admin/casos/${item.id}`} className="text-accent">
                     Abrir
                   </Link>
                 </li>

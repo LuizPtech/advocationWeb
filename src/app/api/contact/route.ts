@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -24,16 +24,14 @@ export async function POST(request: Request) {
     }
 
     const data = parsed.data;
-    await prisma.lead.create({
-      data: {
-        name: data.name,
-        email: data.email.toLowerCase(),
-        phone: data.phone || null,
-        subject: data.subject,
-        message: data.message,
-        area: data.area || null,
-        lgpdConsent: true,
-      },
+    await db.leads.create({
+      name: data.name,
+      email: data.email,
+      phone: data.phone || null,
+      subject: data.subject,
+      message: data.message,
+      area: data.area || null,
+      lgpdConsent: true,
     });
 
     return NextResponse.json({ ok: true });

@@ -1,12 +1,12 @@
 import { revalidatePath } from "next/cache";
 import { AdminShell } from "@/components/admin/AdminShell";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { formatDateTime, leadStatusLabel } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminLeadsPage() {
-  const leads = await prisma.lead.findMany({ orderBy: { createdAt: "desc" } });
+  const leads = await db.leads.list();
 
   return (
     <AdminShell title="Leads e contatos">
@@ -39,11 +39,10 @@ export default async function AdminLeadsPage() {
                   <form
                     action={async (formData) => {
                       "use server";
-                      const status = String(formData.get("status"));
-                      await prisma.lead.update({
-                        where: { id: lead.id },
-                        data: { status: status as never },
-                      });
+                      await db.leads.updateStatus(
+                        lead.id,
+                        String(formData.get("status")),
+                      );
                       revalidatePath("/admin/leads");
                     }}
                     className="flex gap-2"
