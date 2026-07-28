@@ -36,6 +36,16 @@ SUPABASE_JWKS_URL=...
 | Admin   | admin@lauraeva.adv.br | admin123   |
 | Cliente | cliente@exemplo.com   | cliente123 |
 
+## Documentação / base de conhecimento
+
+Vault Obsidian em [`docs/vault/`](docs/vault/) — abra a pasta no Obsidian e comece por [`00 - Início`](docs/vault/00-inicio/00%20-%20Início.md). Contém:
+
+- Visão geral do produto e personas
+- Arquitetura (stack, dados, auth, storage, deploy)
+- Playbooks operacionais (editar site, agenda, financeiro, modelos, blog)
+- Roadmap priorizado + backlog de ideias
+- Riscos e ADRs (decisões técnicas)
+
 ## Editável no painel
 
 - `/admin/site` — nome, OAB, textos, contato
