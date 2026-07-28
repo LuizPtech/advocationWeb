@@ -58,3 +58,40 @@ drop policy if exists "Public read nav" on nav_items;
 create policy "Public read nav"
   on nav_items for select
   using (visible = true);
+
+create table if not exists practice_areas (
+  id text primary key,
+  slug text not null unique,
+  title text not null,
+  short text not null,
+  description text not null,
+  topics text not null default '[]',
+  icon text not null default 'scale',
+  position integer not null default 0,
+  published boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table practice_areas enable row level security;
+drop policy if exists "Public read areas" on practice_areas;
+create policy "Public read areas"
+  on practice_areas for select
+  using (published = true);
+
+create table if not exists how_it_works_steps (
+  id text primary key,
+  step_number text not null,
+  icon text not null default 'message',
+  title text not null,
+  body text not null,
+  position integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table how_it_works_steps enable row level security;
+drop policy if exists "Public read steps" on how_it_works_steps;
+create policy "Public read steps"
+  on how_it_works_steps for select
+  using (true);

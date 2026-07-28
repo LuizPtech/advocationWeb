@@ -1,39 +1,27 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Calendar,
   CheckCircle2,
   Mail,
   MapPin,
   MessageSquare,
   Phone,
-  Scale,
   ShieldCheck,
   Sparkles,
-  Users,
 } from "lucide-react";
-import { faqDefault, howItWorks, practiceAreas } from "@/lib/brand";
+import { Icon } from "@/components/Icon";
+import { getAreas, getFaq, getSteps } from "@/lib/content";
 import { getBrand } from "@/lib/site-settings";
 
 export const dynamic = "force-dynamic";
 
-const areaIcons: Record<string, typeof Scale> = {
-  familia: Users,
-  sucessoes: ShieldCheck,
-  imobiliario: Scale,
-  trabalho: Scale,
-  consumidor: ShieldCheck,
-};
-
-const stepIcons: Record<string, typeof MessageSquare> = {
-  message: MessageSquare,
-  calendar: Calendar,
-  shield: ShieldCheck,
-  check: CheckCircle2,
-};
-
 export default async function HomePage() {
-  const brand = await getBrand();
+  const [brand, areas, steps, faq] = await Promise.all([
+    getBrand(),
+    getAreas(),
+    getSteps(),
+    getFaq(),
+  ]);
 
   return (
     <>
@@ -115,30 +103,29 @@ export default async function HomePage() {
       </section>
 
       {/* AREAS */}
-      <section className="section-pad">
-        <div className="container-page">
-          <div className="text-center">
-            <span className="eyebrow">Como podemos te ajudar</span>
-            <h2 className="font-display mt-5 text-4xl text-ink md:text-5xl">
-              Áreas de atuação
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-muted">
-              Atendimento especializado com foco em soluções claras e humanas
-              para cada história.
-            </p>
-          </div>
+      {areas.length > 0 ? (
+        <section className="section-pad">
+          <div className="container-page">
+            <div className="text-center">
+              <span className="eyebrow">Como podemos te ajudar</span>
+              <h2 className="font-display mt-5 text-4xl text-ink md:text-5xl">
+                Áreas de atuação
+              </h2>
+              <p className="mx-auto mt-4 max-w-xl text-muted">
+                Atendimento especializado com foco em soluções claras e humanas
+                para cada história.
+              </p>
+            </div>
 
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
-            {practiceAreas.map((area, index) => {
-              const Icon = areaIcons[area.slug] || Scale;
-              return (
+            <div className="mt-14 grid gap-6 md:grid-cols-3">
+              {areas.map((area, index) => (
                 <Link
-                  key={area.slug}
+                  key={area.id}
                   href={`/areas/${area.slug}`}
-                  className={`card-lift reveal reveal-delay-${index + 1} panel flex flex-col p-8`}
+                  className={`card-lift reveal reveal-delay-${(index % 3) + 1} panel flex flex-col p-8`}
                 >
                   <span className="badge-ico">
-                    <Icon size={24} />
+                    <Icon name={area.icon} size={24} />
                   </span>
                   <h3 className="font-display mt-5 text-2xl text-ink">
                     {area.title}
@@ -148,18 +135,18 @@ export default async function HomePage() {
                     Saiba mais <ArrowRight size={14} />
                   </span>
                 </Link>
-              );
-            })}
-          </div>
+              ))}
+            </div>
 
-          <div className="mt-12 text-center">
-            <Link href="/agendar" className="btn btn-gold">
-              Agendar consulta gratuita
-              <ArrowRight size={16} />
-            </Link>
+            <div className="mt-12 text-center">
+              <Link href="/agendar" className="btn btn-gold">
+                Agendar consulta gratuita
+                <ArrowRight size={16} />
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       {/* SOBRE */}
       <section className="bg-wine-deep text-paper">
@@ -228,50 +215,49 @@ export default async function HomePage() {
       </section>
 
       {/* COMO FUNCIONA */}
-      <section className="section-pad">
-        <div className="container-page">
-          <div className="text-center">
-            <span className="eyebrow">Como será o atendimento</span>
-            <h2 className="font-display mt-5 text-4xl text-ink md:text-5xl">
-              Entenda cada etapa do processo
-            </h2>
-          </div>
+      {steps.length > 0 ? (
+        <section className="section-pad">
+          <div className="container-page">
+            <div className="text-center">
+              <span className="eyebrow">Como será o atendimento</span>
+              <h2 className="font-display mt-5 text-4xl text-ink md:text-5xl">
+                Entenda cada etapa do processo
+              </h2>
+            </div>
 
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {howItWorks.map((step, index) => {
-              const Icon = stepIcons[step.icon] || MessageSquare;
-              return (
+            <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {steps.map((step, index) => (
                 <div
-                  key={step.step}
+                  key={step.id}
                   className={`card-lift reveal reveal-delay-${(index % 3) + 1} panel-warm p-7 text-center`}
                 >
                   <div className="mx-auto flex items-center justify-center">
                     <span className="badge-ico badge-ico-lg badge-ico-gold">
-                      <Icon size={28} />
+                      <Icon name={step.icon} size={28} />
                     </span>
                   </div>
                   <p className="mt-6 text-xs tracking-[0.22em] text-gold-deep uppercase">
-                    Etapa {step.step}
+                    Etapa {step.stepNumber}
                   </p>
                   <h3 className="font-display mt-2 text-xl text-ink">
                     {step.title}
                   </h3>
                   <p className="mt-3 text-sm leading-relaxed text-muted">
-                    {step.text}
+                    {step.body}
                   </p>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
 
-          <div className="mt-12 text-center">
-            <Link href="/agendar" className="btn btn-primary">
-              Agendar minha consulta
-              <ArrowRight size={16} />
-            </Link>
+            <div className="mt-12 text-center">
+              <Link href="/agendar" className="btn btn-primary">
+                Agendar minha consulta
+                <ArrowRight size={16} />
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       {/* CONTATO */}
       <section className="bg-paper-warm">
@@ -346,32 +332,34 @@ export default async function HomePage() {
       </section>
 
       {/* FAQ */}
-      <section className="section-pad">
-        <div className="container-page max-w-3xl">
-          <div className="text-center">
-            <span className="eyebrow">Perguntas frequentes</span>
-            <h2 className="font-display mt-5 text-4xl text-ink md:text-5xl">
-              Dúvidas comuns dos clientes
-            </h2>
-          </div>
+      {faq.length > 0 ? (
+        <section className="section-pad">
+          <div className="container-page max-w-3xl">
+            <div className="text-center">
+              <span className="eyebrow">Perguntas frequentes</span>
+              <h2 className="font-display mt-5 text-4xl text-ink md:text-5xl">
+                Dúvidas comuns dos clientes
+              </h2>
+            </div>
 
-          <div className="mt-12">
-            {faqDefault.map((item) => (
-              <details key={item.q} className="accordion-item">
-                <summary>{item.q}</summary>
-                <div className="accordion-body">{item.a}</div>
-              </details>
-            ))}
-          </div>
+            <div className="mt-12">
+              {faq.map((item) => (
+                <details key={item.id} className="accordion-item">
+                  <summary>{item.question}</summary>
+                  <div className="accordion-body">{item.answer}</div>
+                </details>
+              ))}
+            </div>
 
-          <div className="mt-12 text-center">
-            <p className="text-muted">Não achou sua resposta?</p>
-            <Link href="/contato" className="btn btn-primary mt-4">
-              Enviar minha pergunta
-            </Link>
+            <div className="mt-12 text-center">
+              <p className="text-muted">Não achou sua resposta?</p>
+              <Link href="/contato" className="btn btn-primary mt-4">
+                Enviar minha pergunta
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
     </>
   );
 }

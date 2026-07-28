@@ -5,10 +5,13 @@ import {
   Calendar,
   ExternalLink,
   FileText,
+  HelpCircle,
   LayoutDashboard,
   LayoutList,
+  ListChecks,
   LogOut,
   Palette,
+  Scale,
   UserCog,
   Users,
   Wallet,
@@ -17,16 +20,21 @@ import { auth, signOut } from "@/lib/auth";
 
 const nav = [
   { href: "/admin", label: "Visão geral", icon: LayoutDashboard },
+  { section: "Conteúdo do site" },
   { href: "/admin/site", label: "Editar site", icon: Palette },
-  { href: "/admin/menu", label: "Menu do site", icon: LayoutList },
+  { href: "/admin/menu", label: "Menu", icon: LayoutList },
+  { href: "/admin/areas", label: "Áreas de atuação", icon: Scale },
+  { href: "/admin/como-funciona", label: "Como funciona", icon: ListChecks },
+  { href: "/admin/faq", label: "Perguntas frequentes", icon: HelpCircle },
+  { href: "/admin/blog", label: "Blog", icon: FileText },
+  { section: "Escritório" },
   { href: "/admin/leads", label: "Leads", icon: UserCog },
   { href: "/admin/agenda", label: "Agenda", icon: Calendar },
   { href: "/admin/casos", label: "Casos", icon: Briefcase },
   { href: "/admin/clientes", label: "Clientes", icon: Users },
   { href: "/admin/financeiro", label: "Financeiro", icon: Wallet },
   { href: "/admin/modelos", label: "Modelos", icon: FileText },
-  { href: "/admin/blog", label: "Blog", icon: FileText },
-];
+] as const;
 
 export async function AdminShell({
   title,
@@ -60,10 +68,24 @@ export async function AdminShell({
         </div>
 
         <nav className="mt-8 flex flex-col gap-1">
-          {nav.map((item) => {
+          {nav.map((item, index) => {
+            if ("section" in item) {
+              return (
+                <p
+                  key={`section-${index}`}
+                  className="mt-4 mb-1 px-3 text-[0.65rem] tracking-[0.22em] text-gold-soft/60 uppercase"
+                >
+                  {item.section}
+                </p>
+              );
+            }
             const Icon = item.icon;
             return (
-              <Link key={item.href} href={item.href} className="admin-nav-link">
+              <Link
+                key={item.href}
+                href={item.href}
+                className="admin-nav-link"
+              >
                 <Icon size={16} />
                 {item.label}
               </Link>

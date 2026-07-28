@@ -1176,4 +1176,230 @@ export const db = {
       if (error) throw new Error(error.message);
     },
   },
+
+  areas: {
+    async list() {
+      const { data, error } = await supabaseAdmin
+        .from("practice_areas")
+        .select("*")
+        .order("position", { ascending: true });
+      if (error) {
+        if (error.code === "42P01") return [];
+        throw new Error(error.message);
+      }
+      return (data || []).map((row) => ({
+        id: String(row.id),
+        slug: String(row.slug),
+        title: String(row.title),
+        short: String(row.short),
+        description: String(row.description),
+        topics: (() => {
+          try {
+            const parsed = JSON.parse(String(row.topics || "[]"));
+            return Array.isArray(parsed) ? parsed.map(String) : [];
+          } catch {
+            return [];
+          }
+        })(),
+        icon: String(row.icon || "scale"),
+        position: Number(row.position || 0),
+        published: Boolean(row.published),
+      }));
+    },
+    async listPublished() {
+      const items = await this.list();
+      return items.filter((item) => item.published);
+    },
+    async findBySlug(slug: string) {
+      const items = await this.list();
+      return items.find((item) => item.slug === slug) || null;
+    },
+    async findById(id: string) {
+      const items = await this.list();
+      return items.find((item) => item.id === id) || null;
+    },
+    async create(input: {
+      slug: string;
+      title: string;
+      short: string;
+      description: string;
+      topics: string[];
+      icon?: string;
+      position?: number;
+    }) {
+      const { error } = await supabaseAdmin.from("practice_areas").insert({
+        id: createId(),
+        slug: input.slug,
+        title: input.title,
+        short: input.short,
+        description: input.description,
+        topics: JSON.stringify(input.topics),
+        icon: input.icon || "scale",
+        position: input.position ?? 999,
+        published: true,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw new Error(error.message);
+    },
+    async update(
+      id: string,
+      input: {
+        slug: string;
+        title: string;
+        short: string;
+        description: string;
+        topics: string[];
+        icon: string;
+        position: number;
+        published: boolean;
+      },
+    ) {
+      const { error } = await supabaseAdmin
+        .from("practice_areas")
+        .update({
+          slug: input.slug,
+          title: input.title,
+          short: input.short,
+          description: input.description,
+          topics: JSON.stringify(input.topics),
+          icon: input.icon,
+          position: input.position,
+          published: input.published,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+    async remove(id: string) {
+      const { error } = await supabaseAdmin
+        .from("practice_areas")
+        .delete()
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+  },
+
+  faq: {
+    async list() {
+      const { data, error } = await supabaseAdmin
+        .from("faq_items")
+        .select("*")
+        .order("position", { ascending: true });
+      if (error) {
+        if (error.code === "42P01") return [];
+        throw new Error(error.message);
+      }
+      return (data || []).map((row) => ({
+        id: String(row.id),
+        question: String(row.question),
+        answer: String(row.answer),
+        position: Number(row.position || 0),
+      }));
+    },
+    async create(input: {
+      question: string;
+      answer: string;
+      position?: number;
+    }) {
+      const { error } = await supabaseAdmin.from("faq_items").insert({
+        id: createId(),
+        question: input.question,
+        answer: input.answer,
+        position: input.position ?? 999,
+      });
+      if (error) throw new Error(error.message);
+    },
+    async update(
+      id: string,
+      input: { question: string; answer: string; position: number },
+    ) {
+      const { error } = await supabaseAdmin
+        .from("faq_items")
+        .update({
+          question: input.question,
+          answer: input.answer,
+          position: input.position,
+        })
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+    async remove(id: string) {
+      const { error } = await supabaseAdmin
+        .from("faq_items")
+        .delete()
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+  },
+
+  howItWorks: {
+    async list() {
+      const { data, error } = await supabaseAdmin
+        .from("how_it_works_steps")
+        .select("*")
+        .order("position", { ascending: true });
+      if (error) {
+        if (error.code === "42P01") return [];
+        throw new Error(error.message);
+      }
+      return (data || []).map((row) => ({
+        id: String(row.id),
+        stepNumber: String(row.step_number),
+        icon: String(row.icon || "message"),
+        title: String(row.title),
+        body: String(row.body),
+        position: Number(row.position || 0),
+      }));
+    },
+    async create(input: {
+      stepNumber: string;
+      icon: string;
+      title: string;
+      body: string;
+      position?: number;
+    }) {
+      const { error } = await supabaseAdmin
+        .from("how_it_works_steps")
+        .insert({
+          id: createId(),
+          step_number: input.stepNumber,
+          icon: input.icon,
+          title: input.title,
+          body: input.body,
+          position: input.position ?? 999,
+          updated_at: new Date().toISOString(),
+        });
+      if (error) throw new Error(error.message);
+    },
+    async update(
+      id: string,
+      input: {
+        stepNumber: string;
+        icon: string;
+        title: string;
+        body: string;
+        position: number;
+      },
+    ) {
+      const { error } = await supabaseAdmin
+        .from("how_it_works_steps")
+        .update({
+          step_number: input.stepNumber,
+          icon: input.icon,
+          title: input.title,
+          body: input.body,
+          position: input.position,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+    async remove(id: string) {
+      const { error } = await supabaseAdmin
+        .from("how_it_works_steps")
+        .delete()
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+  },
 };

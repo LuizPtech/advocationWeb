@@ -2,23 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
-import { getAreaBySlug, practiceAreas } from "@/lib/brand";
+import { getAreaBySlugDynamic } from "@/lib/content";
 
 type Props = { params: Promise<{ slug: string }> };
 
-export async function generateStaticParams() {
-  return practiceAreas.map((area) => ({ slug: area.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const area = getAreaBySlug(slug);
+  const area = await getAreaBySlugDynamic(slug);
   return { title: area?.title ?? "Área" };
 }
 
 export default async function AreaDetailPage({ params }: Props) {
   const { slug } = await params;
-  const area = getAreaBySlug(slug);
+  const area = await getAreaBySlugDynamic(slug);
   if (!area) notFound();
 
   return (

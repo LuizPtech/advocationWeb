@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Scale, ShieldCheck, Users } from "lucide-react";
-import { practiceAreas } from "@/lib/brand";
+import { ArrowRight } from "lucide-react";
+import { Icon } from "@/components/Icon";
+import { getAreas } from "@/lib/content";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Áreas de atuação",
 };
 
-const areaIcons: Record<string, typeof Scale> = {
-  familia: Users,
-  sucessoes: ShieldCheck,
-  imobiliario: Scale,
-};
+export default async function AreasPage() {
+  const areas = await getAreas();
 
-export default function AreasPage() {
   return (
     <div className="section-pad">
       <div className="container-page">
@@ -29,19 +28,18 @@ export default function AreasPage() {
         </div>
 
         <div className="mt-14 grid gap-8">
-          {practiceAreas.map((area, index) => {
-            const Icon = areaIcons[area.slug] || Scale;
+          {areas.map((area, index) => {
             const isEven = index % 2 === 0;
             return (
               <article
-                key={area.slug}
+                key={area.id}
                 className={`panel grid gap-8 p-8 md:p-10 md:grid-cols-[1fr_1.6fr] md:items-center ${
                   isEven ? "" : "md:[&>*:first-child]:order-2"
                 }`}
               >
                 <div className="flex flex-col items-start gap-5">
                   <span className="badge-ico badge-ico-lg badge-ico-gold">
-                    <Icon size={30} />
+                    <Icon name={area.icon} size={30} />
                   </span>
                   <p className="text-xs tracking-[0.22em] text-gold-deep uppercase">
                     0{index + 1}

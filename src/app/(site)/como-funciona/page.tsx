@@ -1,26 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Calendar,
-  CheckCircle2,
-  MessageSquare,
-  ShieldCheck,
-} from "lucide-react";
-import { howItWorks } from "@/lib/brand";
+import { ArrowRight } from "lucide-react";
+import { Icon } from "@/components/Icon";
+import { getSteps } from "@/lib/content";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Como funciona",
 };
 
-const icons: Record<string, typeof MessageSquare> = {
-  message: MessageSquare,
-  calendar: Calendar,
-  shield: ShieldCheck,
-  check: CheckCircle2,
-};
+export default async function ComoFuncionaPage() {
+  const steps = await getSteps();
 
-export default function ComoFuncionaPage() {
   return (
     <>
       <section className="relative overflow-hidden">
@@ -46,26 +38,23 @@ export default function ComoFuncionaPage() {
 
       <section className="pb-20">
         <div className="container-page grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {howItWorks.map((step, index) => {
-            const Icon = icons[step.icon] || MessageSquare;
-            return (
-              <article
-                key={step.step}
-                className={`card-lift reveal reveal-delay-${(index % 3) + 1} panel p-7`}
-              >
-                <span className="badge-ico badge-ico-lg badge-ico-gold">
-                  <Icon size={26} />
-                </span>
-                <p className="mt-6 text-xs tracking-[0.22em] text-gold-deep uppercase">
-                  Etapa {step.step}
-                </p>
-                <h3 className="font-display mt-2 text-xl text-ink">
-                  {step.title}
-                </h3>
-                <p className="mt-3 text-sm text-muted">{step.text}</p>
-              </article>
-            );
-          })}
+          {steps.map((step, index) => (
+            <article
+              key={step.id}
+              className={`card-lift reveal reveal-delay-${(index % 3) + 1} panel p-7`}
+            >
+              <span className="badge-ico badge-ico-lg badge-ico-gold">
+                <Icon name={step.icon} size={26} />
+              </span>
+              <p className="mt-6 text-xs tracking-[0.22em] text-gold-deep uppercase">
+                Etapa {step.stepNumber}
+              </p>
+              <h3 className="font-display mt-2 text-xl text-ink">
+                {step.title}
+              </h3>
+              <p className="mt-3 text-sm text-muted">{step.body}</p>
+            </article>
+          ))}
         </div>
       </section>
 
