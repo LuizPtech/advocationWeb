@@ -14,6 +14,7 @@ export type Brand = {
   city: string;
   photoUrl: string;
   heroImageUrl: string;
+  showPhoto: boolean;
 };
 
 export const defaultPhotoUrl =
@@ -40,6 +41,7 @@ export const defaultBrand: Brand = {
   city: "São Paulo",
   photoUrl: defaultPhotoUrl,
   heroImageUrl: defaultHeroUrl,
+  showPhoto: true,
 };
 
 /** @deprecated use getBrand() for editable settings */
@@ -164,6 +166,7 @@ export function toBrandFromSettings(settings: {
   city: string;
   photoUrl?: string | null;
   heroImageUrl?: string | null;
+  showPhoto?: boolean | null;
 }): Brand {
   const digits = whatsappDigits(settings.phone);
   return {
@@ -182,5 +185,6 @@ export function toBrandFromSettings(settings: {
     whatsapp: settings.whatsapp || (digits ? `https://wa.me/${digits}` : ""),
     photoUrl: settings.photoUrl || defaultPhotoUrl,
     heroImageUrl: settings.heroImageUrl || defaultHeroUrl,
+    showPhoto: settings.showPhoto ?? true,
   };
 }

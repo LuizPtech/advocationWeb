@@ -47,27 +47,45 @@ export default async function HomePage() {
               "radial-gradient(1200px 500px at 90% -10%, rgba(184,146,90,0.25), transparent 60%), radial-gradient(900px 400px at -10% 10%, rgba(122,31,46,0.16), transparent 55%), linear-gradient(180deg, #f7ede0 0%, #fbf3e6 100%)",
           }}
         />
-        <div className="container-page grid gap-14 py-16 md:grid-cols-[1.15fr_0.95fr] md:items-center md:py-24">
-          <div className="reveal">
-            <span className="eyebrow">Escritório de advocacia</span>
+        <div
+          className={
+            brand.showPhoto
+              ? "container-page grid gap-14 py-16 md:grid-cols-[1.15fr_0.95fr] md:items-center md:py-24"
+              : "container-page py-16 text-center md:py-28"
+          }
+        >
+          <div className={brand.showPhoto ? "reveal" : "reveal mx-auto max-w-3xl"}>
+            <span className={`eyebrow ${brand.showPhoto ? "" : "justify-center"}`}>
+              Escritório de advocacia
+            </span>
             <h1 className="font-display mt-6 text-5xl leading-[1.02] text-ink md:text-6xl lg:text-7xl">
               {brand.tagline}
             </h1>
-            <p className="mt-6 max-w-lg text-lg text-muted">
+            <p
+              className={`mt-6 text-lg text-muted ${brand.showPhoto ? "max-w-lg" : "mx-auto max-w-2xl"}`}
+            >
               {brand.headline}
             </p>
 
-            <div className="mt-9 flex flex-wrap gap-3">
+            <div
+              className={`mt-9 flex flex-wrap gap-3 ${brand.showPhoto ? "" : "justify-center"}`}
+            >
               <Link href="/agendar" className="btn btn-gold">
                 Agendar consulta gratuita
                 <ArrowRight size={16} />
               </Link>
-              <Link href={brand.whatsapp} target="_blank" className="btn btn-secondary">
+              <Link
+                href={brand.whatsapp}
+                target="_blank"
+                className="btn btn-secondary"
+              >
                 Falar no WhatsApp
               </Link>
             </div>
 
-            <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted">
+            <div
+              className={`mt-10 flex flex-wrap items-center gap-6 text-sm text-muted ${brand.showPhoto ? "" : "justify-center"}`}
+            >
               <div className="flex items-center gap-2">
                 <Sparkles size={16} className="text-gold" />
                 Atendimento humanizado
@@ -83,14 +101,16 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="reveal reveal-delay-2 drift">
-            <div className="portrait-frame">
-              <span className="flourish tl">✧</span>
-              <span className="flourish br">✦</span>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={brand.photoUrl} alt={brand.name} />
+          {brand.showPhoto ? (
+            <div className="reveal reveal-delay-2 drift">
+              <div className="portrait-frame">
+                <span className="flourish tl">✧</span>
+                <span className="flourish br">✦</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={brand.photoUrl} alt={brand.name} />
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       </section>
 
@@ -143,33 +163,47 @@ export default async function HomePage() {
 
       {/* SOBRE */}
       <section className="bg-wine-deep text-paper">
-        <div className="container-page section-pad grid gap-12 md:grid-cols-[0.85fr_1.15fr] md:items-center">
-          <div className="relative">
-            <div
-              className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden"
-              style={{ borderRadius: "220px 220px 24px 24px" }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={brand.photoUrl}
-                alt={brand.name}
-                className="h-full w-full object-cover"
-              />
+        <div
+          className={
+            brand.showPhoto
+              ? "container-page section-pad grid gap-12 md:grid-cols-[0.85fr_1.15fr] md:items-center"
+              : "container-page section-pad text-center"
+          }
+        >
+          {brand.showPhoto ? (
+            <div className="relative">
               <div
-                aria-hidden
-                className="absolute inset-0 ring-1 ring-gold/50"
+                className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden"
                 style={{ borderRadius: "220px 220px 24px 24px" }}
-              />
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={brand.photoUrl}
+                  alt={brand.name}
+                  className="h-full w-full object-cover"
+                />
+                <div
+                  aria-hidden
+                  className="absolute inset-0 ring-1 ring-gold/50"
+                  style={{ borderRadius: "220px 220px 24px 24px" }}
+                />
+              </div>
+              <span className="font-display absolute -bottom-6 -left-2 text-6xl text-gold/60">
+                ✦
+              </span>
             </div>
-            <span className="font-display absolute -bottom-6 -left-2 text-6xl text-gold/60">
-              ✦
-            </span>
-          </div>
+          ) : null}
 
-          <div>
-            <span className="eyebrow" style={{ color: "var(--gold-soft)" }}>
+          <div className={brand.showPhoto ? "" : "mx-auto max-w-2xl"}>
+            <span
+              className={`eyebrow ${brand.showPhoto ? "" : "justify-center"}`}
+              style={{ color: "var(--gold-soft)" }}
+            >
               Quem irá trabalhar ao seu favor
             </span>
+            {!brand.showPhoto ? (
+              <p className="font-display mt-6 text-3xl text-gold/60">✦</p>
+            ) : null}
             <h2 className="font-display mt-5 text-4xl leading-tight text-paper md:text-5xl">
               {brand.name}
             </h2>
@@ -179,7 +213,9 @@ export default async function HomePage() {
             <div className="mt-6 space-y-4 text-base leading-relaxed text-mist/90 whitespace-pre-line">
               {brand.about}
             </div>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div
+              className={`mt-8 flex flex-wrap gap-3 ${brand.showPhoto ? "" : "justify-center"}`}
+            >
               <Link href="/sobre" className="btn btn-inverse">
                 Conhecer mais
               </Link>

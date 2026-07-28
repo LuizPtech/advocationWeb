@@ -30,5 +30,6 @@ export async function ensureSiteSettings() {
     city: defaultBrand.city,
     photoUrl: defaultBrand.photoUrl,
     heroImageUrl: defaultBrand.heroImageUrl,
+    showPhoto: defaultBrand.showPhoto,
   });
 }

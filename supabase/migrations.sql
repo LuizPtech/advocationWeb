@@ -4,6 +4,7 @@
 alter table site_settings
   add column if not exists photo_url text,
   add column if not exists hero_image_url text,
+  add column if not exists show_photo boolean not null default true,
   add column if not exists faq text not null default '[]';
 
 create table if not exists faq_items (

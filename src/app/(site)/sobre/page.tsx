@@ -28,28 +28,51 @@ export default async function SobrePage() {
               "radial-gradient(1000px 400px at 10% 0%, rgba(184,146,90,0.25), transparent 55%), linear-gradient(180deg, #f7ede0 0%, #fbf3e6 100%)",
           }}
         />
-        <div className="container-page section-pad grid gap-14 md:grid-cols-[0.85fr_1.15fr] md:items-center">
-          <div className="reveal">
-            <div className="portrait-frame">
-              <span className="flourish tl">✧</span>
-              <span className="flourish br">✦</span>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={brand.photoUrl} alt={brand.name} />
+        <div
+          className={
+            brand.showPhoto
+              ? "container-page section-pad grid gap-14 md:grid-cols-[0.85fr_1.15fr] md:items-center"
+              : "container-page section-pad text-center"
+          }
+        >
+          {brand.showPhoto ? (
+            <div className="reveal">
+              <div className="portrait-frame">
+                <span className="flourish tl">✧</span>
+                <span className="flourish br">✦</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={brand.photoUrl} alt={brand.name} />
+              </div>
             </div>
-          </div>
+          ) : null}
 
-          <div className="reveal reveal-delay-1">
-            <span className="eyebrow">Sobre</span>
+          <div
+            className={
+              brand.showPhoto ? "reveal reveal-delay-1" : "reveal mx-auto max-w-3xl"
+            }
+          >
+            <span className={`eyebrow ${brand.showPhoto ? "" : "justify-center"}`}>
+              Sobre
+            </span>
+            {!brand.showPhoto ? (
+              <p className="font-display mt-6 text-4xl text-gold/70">✦</p>
+            ) : null}
             <h1 className="font-display mt-5 text-5xl leading-tight text-ink md:text-6xl">
               {brand.name}
             </h1>
             <p className="mt-3 text-sm tracking-[0.22em] text-gold-deep uppercase">
               {brand.title} · {brand.oab}
             </p>
-            <div className="mt-8 space-y-5 text-lg leading-relaxed text-ink-soft whitespace-pre-line">
+            <div
+              className={`mt-8 space-y-5 text-lg leading-relaxed text-ink-soft whitespace-pre-line ${
+                brand.showPhoto ? "" : "mx-auto"
+              }`}
+            >
               {brand.about}
             </div>
-            <div className="mt-10 flex flex-wrap gap-3">
+            <div
+              className={`mt-10 flex flex-wrap gap-3 ${brand.showPhoto ? "" : "justify-center"}`}
+            >
               <Link href="/agendar" className="btn btn-gold">
                 Agendar consulta <ArrowRight size={16} />
               </Link>

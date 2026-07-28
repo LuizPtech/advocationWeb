@@ -136,6 +136,7 @@ export type SettingsRow = {
   city: string;
   photoUrl: string | null;
   heroImageUrl: string | null;
+  showPhoto: boolean;
   updatedAt: string;
 };
 
@@ -294,6 +295,7 @@ function mapSettings(row: Record<string, unknown>): SettingsRow {
     city: String(row.city),
     photoUrl: (row.photo_url as string) || null,
     heroImageUrl: (row.hero_image_url as string) || null,
+    showPhoto: row.show_photo === undefined ? true : Boolean(row.show_photo),
     updatedAt: String(row.updated_at),
   };
 }
@@ -879,6 +881,7 @@ export const db = {
       city: string;
       photoUrl?: string | null;
       heroImageUrl?: string | null;
+      showPhoto?: boolean;
     }) {
       const baseRow: Record<string, unknown> = {
         id: "default",
@@ -896,25 +899,37 @@ export const db = {
         city: input.city,
         updated_at: new Date().toISOString(),
       };
-      const rowWithPhotos: Record<string, unknown> = {
+      const extended: Record<string, unknown> = {
         ...baseRow,
         photo_url: input.photoUrl || null,
         hero_image_url: input.heroImageUrl || null,
+        show_photo: input.showPhoto ?? true,
       };
 
-      const attempt = await supabaseAdmin
+      let attempt = await supabaseAdmin
         .from("site_settings")
-        .upsert(rowWithPhotos)
+        .upsert(extended)
         .select("*")
         .single();
 
+      // Retry sem show_photo (coluna nova)
+      if (attempt.error?.code === "42703" && "show_photo" in extended) {
+        const withoutShow: Record<string, unknown> = { ...extended };
+        delete withoutShow.show_photo;
+        attempt = await supabaseAdmin
+          .from("site_settings")
+          .upsert(withoutShow)
+          .select("*")
+          .single();
+      }
+
+      // Retry sem photo/hero (colunas mais antigas)
       if (attempt.error?.code === "42703") {
-        const retry = await supabaseAdmin
+        attempt = await supabaseAdmin
           .from("site_settings")
           .upsert(baseRow)
           .select("*")
           .single();
-        return mapSettings(requireData(retry.data, retry.error));
       }
       return mapSettings(requireData(attempt.data, attempt.error));
     },

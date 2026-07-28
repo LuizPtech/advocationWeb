@@ -39,6 +39,7 @@ export default async function AdminSitePage() {
             city: String(formData.get("city") || ""),
             photoUrl: String(formData.get("photoUrl") || "") || null,
             heroImageUrl: String(formData.get("heroImageUrl") || "") || null,
+            showPhoto: formData.get("showPhoto") === "on",
           });
 
           revalidatePath("/");
@@ -52,10 +53,28 @@ export default async function AdminSitePage() {
         <section>
           <h2 className="font-display text-2xl text-ink">Fotos</h2>
           <p className="mt-1 text-sm text-muted">
-            Cole o link (URL) da foto — pode ser Instagram, Google Fotos, ou
-            qualquer imagem hospedada online. Recomendado: foto quadrada,
-            iluminação suave.
+            Você pode exibir uma foto no hero e na página Sobre — ou desativar
+            se preferir um visual apenas com tipografia.
           </p>
+
+          <label className="mt-5 flex items-start gap-3 rounded-xl border border-line-soft bg-paper-elevated p-4">
+            <input
+              type="checkbox"
+              name="showPhoto"
+              defaultChecked={settings.showPhoto}
+              className="mt-1 h-4 w-4 accent-[var(--wine)]"
+            />
+            <span>
+              <span className="block font-semibold text-ink">
+                Mostrar foto no site
+              </span>
+              <span className="mt-1 block text-sm text-muted">
+                Se desmarcado, as seções do hero e Sobre usam um layout sem
+                foto, com composição tipográfica.
+              </span>
+            </span>
+          </label>
+
           <div className="mt-5 grid gap-6 md:grid-cols-2">
             <div className="field">
               <label htmlFor="photoUrl">Foto principal (hero e Sobre)</label>
@@ -65,7 +84,11 @@ export default async function AdminSitePage() {
                 defaultValue={settings.photoUrl || defaultBrand.photoUrl}
                 placeholder="https://..."
               />
-              {settings.photoUrl ? (
+              <p className="text-xs text-muted">
+                Cole o link (URL) da foto — Instagram, Google Fotos ou qualquer
+                imagem online. Ignorado quando “mostrar foto” está desmarcado.
+              </p>
+              {settings.showPhoto && settings.photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={settings.photoUrl}
