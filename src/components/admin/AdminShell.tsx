@@ -10,6 +10,7 @@ import {
   Palette,
   UserCog,
   Users,
+  Wallet,
 } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
 
@@ -20,6 +21,7 @@ const nav = [
   { href: "/admin/agenda", label: "Agenda", icon: Calendar },
   { href: "/admin/casos", label: "Casos", icon: Briefcase },
   { href: "/admin/clientes", label: "Clientes", icon: Users },
+  { href: "/admin/financeiro", label: "Financeiro", icon: Wallet },
   { href: "/admin/blog", label: "Blog", icon: FileText },
 ];
 

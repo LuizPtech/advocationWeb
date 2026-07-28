@@ -716,6 +716,14 @@ export const db = {
   },
 
   payments: {
+    async all() {
+      const { data, error } = await supabaseAdmin
+        .from("payments")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw new Error(error.message);
+      return (data || []).map((row) => mapPayment(row));
+    },
     async byClient(clientId: string) {
       const { data, error } = await supabaseAdmin
         .from("payments")
@@ -764,6 +772,62 @@ export const db = {
       const { error } = await supabaseAdmin
         .from("payments")
         .update({ status: "PAID", paid_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+    async updateStatus(id: string, status: string) {
+      const patch: Record<string, unknown> = { status };
+      if (status === "PAID") patch.paid_at = new Date().toISOString();
+      else if (status !== "PAID") patch.paid_at = null;
+      const { error } = await supabaseAdmin
+        .from("payments")
+        .update(patch)
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+  },
+
+  expenses: {
+    async list() {
+      const { data, error } = await supabaseAdmin
+        .from("expenses")
+        .select("*")
+        .order("incurred_at", { ascending: false });
+      if (error) {
+        if (error.code === "42P01" || error.code === "42703") return [];
+        throw new Error(error.message);
+      }
+      return (data || []).map((row) => ({
+        id: String(row.id),
+        description: String(row.description),
+        amount: Number(row.amount),
+        category: String(row.category || "geral"),
+        incurredAt: String(row.incurred_at),
+        notes: (row.notes as string) || null,
+        createdAt: String(row.created_at),
+      }));
+    },
+    async create(input: {
+      description: string;
+      amount: number;
+      category?: string;
+      incurredAt?: string;
+      notes?: string | null;
+    }) {
+      const { error } = await supabaseAdmin.from("expenses").insert({
+        id: createId(),
+        description: input.description,
+        amount: input.amount,
+        category: input.category || "geral",
+        incurred_at: input.incurredAt || new Date().toISOString(),
+        notes: input.notes || null,
+      });
+      if (error) throw new Error(error.message);
+    },
+    async remove(id: string) {
+      const { error } = await supabaseAdmin
+        .from("expenses")
+        .delete()
         .eq("id", id);
       if (error) throw new Error(error.message);
     },

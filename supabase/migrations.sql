@@ -20,3 +20,15 @@ drop policy if exists "Public read faq" on faq_items;
 create policy "Public read faq"
   on faq_items for select
   using (true);
+
+create table if not exists expenses (
+  id text primary key,
+  description text not null,
+  amount double precision not null,
+  category text not null default 'geral',
+  incurred_at timestamptz not null default now(),
+  notes text,
+  created_at timestamptz not null default now()
+);
+
+alter table expenses enable row level security;
