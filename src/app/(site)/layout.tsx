@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { brand } from "@/lib/brand";
+import { getBrand } from "@/lib/site-settings";
 
-export default function SiteLayout({
+export default async function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const brand = await getBrand();
+
   return (
     <>
       <a
@@ -16,11 +18,11 @@ export default function SiteLayout({
       >
         Ir para o conteúdo
       </a>
-      <SiteHeader />
+      <SiteHeader brand={brand} />
       <main id="conteudo" className="flex-1">
         {children}
       </main>
-      <SiteFooter />
+      <SiteFooter brand={brand} />
       <Link
         href={brand.whatsapp}
         target="_blank"

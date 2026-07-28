@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { brand } from "@/lib/brand";
+import type { Brand } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -15,7 +15,7 @@ const links = [
   { href: "/contato", label: "Contato" },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ brand }: { brand: Brand }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 

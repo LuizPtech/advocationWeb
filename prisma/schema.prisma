@@ -143,3 +143,20 @@ model AvailabilitySlot {
   endTime   String
   active    Boolean @default(true)
 }
+
+model SiteSettings {
+  id        String   @id @default("default")
+  name      String
+  shortName String
+  title     String
+  oab       String
+  tagline   String
+  headline  String
+  about     String
+  email     String
+  phone     String
+  whatsapp  String
+  address   String
+  city      String
+  updatedAt DateTime @updatedAt
+}

@@ -1,16 +1,40 @@
-export const brand = {
-  name: "Dra. Helena Vasconcelos",
-  shortName: "Helena Vasconcelos",
+export type Brand = {
+  name: string;
+  shortName: string;
+  title: string;
+  oab: string;
+  tagline: string;
+  headline: string;
+  about: string;
+  email: string;
+  phone: string;
+  phoneHref: string;
+  whatsapp: string;
+  address: string;
+  city: string;
+};
+
+export const defaultBrand: Brand = {
+  name: "Dra. Laura Eva",
+  shortName: "Laura Eva",
   title: "Advogada",
-  oab: "OAB/SP 342.891",
-  tagline: "Orientação jurídica clara, com acompanhamento humano em cada etapa.",
-  email: "contato@helenavasconcelos.adv.br",
+  oab: "OAB/SP 000.000",
+  tagline:
+    "Orientação jurídica clara, com acompanhamento humano em cada etapa.",
+  headline:
+    "Advocacia em família, trabalho e relações de consumo — com clareza desde o primeiro contato.",
+  about:
+    "Advogada com atuação em Direito de Família, Direito do Trabalho e Direito do Consumidor. O atendimento começa com escuta, segue com análise objetiva das opções e permanece transparente no acompanhamento do caso — com linguagem clara e próximos passos bem definidos.",
+  email: "contato@lauraeva.adv.br",
   phone: "(11) 98765-4321",
   phoneHref: "5511987654321",
   whatsapp: "https://wa.me/5511987654321",
-  address: "Av. Paulista, 1000 — São Paulo, SP",
+  address: "São Paulo, SP",
   city: "São Paulo",
-} as const;
+};
+
+/** @deprecated use getBrand() for editable settings */
+export const brand = defaultBrand;
 
 export const practiceAreas = [
   {
@@ -79,4 +103,30 @@ export type PracticeAreaSlug = (typeof practiceAreas)[number]["slug"];
 
 export function getAreaBySlug(slug: string) {
   return practiceAreas.find((area) => area.slug === slug);
+}
+
+export function whatsappDigits(phone: string) {
+  return phone.replace(/\D/g, "");
+}
+
+export function toBrandFromSettings(settings: {
+  name: string;
+  shortName: string;
+  title: string;
+  oab: string;
+  tagline: string;
+  headline: string;
+  about: string;
+  email: string;
+  phone: string;
+  whatsapp: string;
+  address: string;
+  city: string;
+}): Brand {
+  const digits = whatsappDigits(settings.phone);
+  return {
+    ...settings,
+    phoneHref: digits,
+    whatsapp: settings.whatsapp || (digits ? `https://wa.me/${digits}` : ""),
+  };
 }

@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ContactForm } from "@/components/forms/ContactForm";
-import { brand } from "@/lib/brand";
+import { getBrand } from "@/lib/site-settings";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Contato",
 };
 
-export default function ContatoPage() {
+export default async function ContatoPage() {
+  const brand = await getBrand();
+
   return (
     <div className="section-pad">
       <div className="container-page grid gap-10 lg:grid-cols-[0.85fr_1.15fr]">

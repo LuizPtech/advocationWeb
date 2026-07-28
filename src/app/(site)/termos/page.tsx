@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { brand } from "@/lib/brand";
+import { getBrand } from "@/lib/site-settings";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Termos de uso",
 };
 
-export default function TermosPage() {
+export default async function TermosPage() {
+  const brand = await getBrand();
+
   return (
     <div className="section-pad">
       <div className="container-page max-w-3xl">
@@ -52,9 +56,7 @@ export default function TermosPage() {
           </p>
 
           <h2 className="font-display text-3xl text-ink">5. Contato</h2>
-          <p>
-            Dúvidas sobre estes termos: {brand.email}.
-          </p>
+          <p>Dúvidas sobre estes termos: {brand.email}.</p>
         </div>
       </div>
     </div>

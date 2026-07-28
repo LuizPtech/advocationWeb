@@ -34,7 +34,7 @@ export function LoginForm() {
       return;
     }
 
-    if (email === "admin@helenavasconcelos.adv.br") {
+    if (email.toLowerCase().startsWith("admin@")) {
       router.push("/admin");
     } else {
       router.push(callbackUrl);
@@ -66,7 +66,7 @@ export function LoginForm() {
         Demonstração — cliente:{" "}
         <code>cliente@exemplo.com</code> / <code>cliente123</code>
         <br />
-        Admin: <code>admin@helenavasconcelos.adv.br</code> / <code>admin123</code>
+        Admin: <code>admin@lauraeva.adv.br</code> / <code>admin123</code>
       </p>
       <p className="text-sm text-muted">
             Ainda não é cliente?{" "}

@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { brand } from "@/lib/brand";
+import type { Brand } from "@/lib/brand";
 
-export function SiteFooter() {
+export function SiteFooter({ brand }: { brand: Brand }) {
   return (
     <footer className="mt-auto border-t border-line/80 bg-ink text-paper">
       <div className="container-page grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr]">

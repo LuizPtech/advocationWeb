@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { brand } from "@/lib/brand";
+import { getBrand } from "@/lib/site-settings";
 
-export const metadata: Metadata = {
-  title: "Sobre",
-  description: `Conheça a trajetória de ${brand.name}.`,
-};
+export const dynamic = "force-dynamic";
 
-export default function SobrePage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand();
+  return {
+    title: "Sobre",
+    description: `Conheça a trajetória de ${brand.name}.`,
+  };
+}
+
+export default async function SobrePage() {
+  const brand = await getBrand();
+
   return (
     <div className="section-pad">
       <div className="container-page grid gap-12 md:grid-cols-[0.9fr_1.1fr] md:items-start">
@@ -26,23 +33,8 @@ export default function SobrePage() {
             {brand.name}
           </h1>
           <p className="mt-2 text-muted">{brand.oab}</p>
-          <div className="mt-8 space-y-5 text-lg leading-relaxed text-ink-soft">
-            <p>
-              Advogada com atuação em Direito de Família, Direito do Trabalho e
-              Direito do Consumidor. O escritório nasceu da convicção de que
-              orientação jurídica deve ser clara, acessível e acompanhada de
-              perto — sem jargão desnecessário e sem distância do cliente.
-            </p>
-            <p>
-              Cada caso começa com escuta. Em seguida, uma análise objetiva das
-              opções, dos riscos e do caminho mais adequado. Quando há processo,
-              o acompanhamento permanece transparente: próximos passos,
-              documentos e prazos ficam organizados.
-            </p>
-            <p>
-              Atendimento em São Paulo e online para clientes em outras
-              localidades, sempre com horário marcado.
-            </p>
+          <div className="mt-8 space-y-5 text-lg leading-relaxed text-ink-soft whitespace-pre-line">
+            {brand.about}
           </div>
           <div className="mt-10 flex flex-wrap gap-3">
             <Link href="/agendar" className="btn btn-primary">

@@ -1,7 +1,7 @@
 import { Cormorant_Garamond, Source_Sans_3 } from "next/font/google";
 import type { Metadata } from "next";
 import { AuthProvider } from "@/components/providers/AuthProvider";
-import { brand } from "@/lib/brand";
+import { defaultBrand } from "@/lib/brand";
 import "./globals.css";
 
 const sourceSans = Source_Sans_3({
@@ -19,10 +19,10 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata: Metadata = {
   title: {
-    default: `${brand.name} | Advocacia`,
-    template: `%s | ${brand.shortName}`,
+    default: `${defaultBrand.name} | Advocacia`,
+    template: `%s | ${defaultBrand.shortName}`,
   },
-  description: brand.tagline,
+  description: defaultBrand.tagline,
 };
 
 export default function RootLayout({

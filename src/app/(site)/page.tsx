@@ -1,7 +1,12 @@
 import Link from "next/link";
-import { brand, howItWorks, practiceAreas } from "@/lib/brand";
+import { howItWorks, practiceAreas } from "@/lib/brand";
+import { getBrand } from "@/lib/site-settings";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const brand = await getBrand();
+
   return (
     <>
       <section className="relative overflow-hidden">
@@ -20,8 +25,7 @@ export default function HomePage() {
               {brand.name}
             </p>
             <h1 className="mt-6 max-w-xl text-xl leading-relaxed text-mist md:text-2xl">
-              Advocacia em família, trabalho e relações de consumo — com clareza
-              desde o primeiro contato.
+              {brand.headline}
             </h1>
             <p className="mt-4 max-w-lg text-base text-mist/90">{brand.tagline}</p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -46,7 +50,7 @@ export default function HomePage() {
                 Online e presencial
               </p>
               <p className="mt-4 text-sm leading-relaxed text-mist">
-                Consultas com horário marcado em São Paulo ou por
+                Consultas com horário marcado em {brand.city} ou por
                 videoconferência. Acompanhamento contínuo na área do cliente.
               </p>
               <p className="mt-6 text-sm text-mist">{brand.oab}</p>

@@ -1,6 +1,6 @@
-# Advocacia Web — Dra. Helena Vasconcelos
+# Advocacia Web — Dra. Laura Eva
 
-Plataforma de advocacia (MVP): site institucional, agendamento, área do cliente e painel administrativo.
+Plataforma de advocacia (MVP): site institucional editável, agendamento, área do cliente e painel administrativo.
 
 ## Stack
 
@@ -21,17 +21,24 @@ Abra [http://localhost:3000](http://localhost:3000).
 
 ## Contas de demonstração
 
-| Perfil  | E-mail                             | Senha       |
-|---------|------------------------------------|-------------|
-| Admin   | admin@helenavasconcelos.adv.br     | admin123    |
-| Cliente | cliente@exemplo.com                | cliente123  |
+| Perfil  | E-mail                  | Senha       |
+|---------|-------------------------|-------------|
+| Admin   | admin@lauraeva.adv.br   | admin123    |
+| Cliente | cliente@exemplo.com     | cliente123  |
+
+## O que é editável no painel (`/admin`)
+
+- **Editar site**: nome, OAB, headlines, texto Sobre, e-mail, telefone, WhatsApp, endereço
+- **Blog**: criar, publicar e despublicar artigos
+- **Leads, agenda, casos, clientes e honorários**
 
 ## Principais rotas
 
 - `/` — home
 - `/agendar` — agendamento online/presencial
 - `/area-cliente` — casos, documentos, mensagens e honorários
-- `/admin` — leads, agenda, casos, clientes e blog
+- `/admin` — painel da advogada
+- `/admin/site` — dados públicos do site
 - `/privacidade` e `/termos` — LGPD e avisos legais
 
 ## Variáveis de ambiente

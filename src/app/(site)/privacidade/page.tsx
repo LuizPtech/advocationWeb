@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { brand } from "@/lib/brand";
+import { getBrand } from "@/lib/site-settings";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Privacidade e LGPD",
 };
 
-export default function PrivacidadePage() {
+export default async function PrivacidadePage() {
+  const brand = await getBrand();
+
   return (
     <div className="section-pad">
       <div className="container-page max-w-3xl">

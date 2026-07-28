@@ -8,16 +8,46 @@ async function main() {
   const clientHash = await bcrypt.hash("cliente123", 10);
 
   const admin = await prisma.user.upsert({
-    where: { email: "admin@helenavasconcelos.adv.br" },
-    update: {},
+    where: { email: "admin@lauraeva.adv.br" },
+    update: {
+      name: "Dra. Laura Eva",
+    },
     create: {
-      name: "Dra. Helena Vasconcelos",
-      email: "admin@helenavasconcelos.adv.br",
+      name: "Dra. Laura Eva",
+      email: "admin@lauraeva.adv.br",
       passwordHash: adminHash,
       role: "ADMIN",
       phone: "(11) 98765-4321",
     },
   });
+
+  await prisma.siteSettings.upsert({
+    where: { id: "default" },
+    update: {
+      name: "Dra. Laura Eva",
+      shortName: "Laura Eva",
+    },
+    create: {
+      id: "default",
+      name: "Dra. Laura Eva",
+      shortName: "Laura Eva",
+      title: "Advogada",
+      oab: "OAB/SP 000.000",
+      tagline:
+        "Orientação jurídica clara, com acompanhamento humano em cada etapa.",
+      headline:
+        "Advocacia em família, trabalho e relações de consumo — com clareza desde o primeiro contato.",
+      about:
+        "Advogada com atuação em Direito de Família, Direito do Trabalho e Direito do Consumidor. O atendimento começa com escuta, segue com análise objetiva das opções e permanece transparente no acompanhamento do caso — com linguagem clara e próximos passos bem definidos.",
+      email: "contato@lauraeva.adv.br",
+      phone: "(11) 98765-4321",
+      whatsapp: "https://wa.me/5511987654321",
+      address: "São Paulo, SP",
+      city: "São Paulo",
+    },
+  });
+
+  // Conta demo antiga (se existir e sem vínculos críticos) pode ser ignorada.
 
   const client = await prisma.user.upsert({
     where: { email: "cliente@exemplo.com" },
@@ -186,7 +216,7 @@ Não ignore prazos de contestação. Orientação jurídica antecipa a melhor es
   }
 
   console.log("Seed concluído.");
-  console.log("Admin: admin@helenavasconcelos.adv.br / admin123");
+  console.log("Admin: admin@lauraeva.adv.br / admin123");
   console.log("Cliente: cliente@exemplo.com / cliente123");
 }
 
