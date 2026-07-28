@@ -1,56 +1,99 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import {
+  ArrowRight,
+  Calendar,
+  CheckCircle2,
+  MessageSquare,
+  ShieldCheck,
+} from "lucide-react";
 import { howItWorks } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "Como funciona",
 };
 
+const icons: Record<string, typeof MessageSquare> = {
+  message: MessageSquare,
+  calendar: Calendar,
+  shield: ShieldCheck,
+  check: CheckCircle2,
+};
+
 export default function ComoFuncionaPage() {
   return (
-    <div className="section-pad">
-      <div className="container-page">
-        <p className="text-sm tracking-[0.16em] text-accent uppercase">
-          Jornada
-        </p>
-        <h1 className="font-display mt-3 max-w-3xl text-5xl text-ink md:text-6xl">
-          Como funciona o atendimento
-        </h1>
-        <p className="mt-5 max-w-2xl text-lg text-muted">
-          Um fluxo simples para você entender o que acontece em cada etapa —
-          antes mesmo de contratar.
-        </p>
-
-        <div className="mt-14 grid gap-8 md:grid-cols-3">
-          {howItWorks.map((item) => (
-            <article key={item.step} className="panel p-7 shadow-[var(--shadow)]">
-              <p className="font-display text-4xl text-accent">{item.step}</p>
-              <h2 className="mt-4 text-xl font-semibold text-ink">
-                {item.title}
-              </h2>
-              <p className="mt-3 text-muted">{item.text}</p>
-            </article>
-          ))}
-        </div>
-
-        <div className="mt-14 panel p-8 md:p-10">
-          <h2 className="font-display text-3xl text-ink">
-            Área do cliente
-          </h2>
-          <p className="mt-3 max-w-2xl text-muted">
-            Depois da contratação, você acompanha status do caso, envia
-            documentos, troca mensagens e consulta honorários em um só lugar.
+    <>
+      <section className="relative overflow-hidden">
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10"
+          style={{
+            background:
+              "radial-gradient(900px 400px at 10% 0%, rgba(184,146,90,0.22), transparent 55%), linear-gradient(180deg, #f7ede0 0%, #fbf3e6 100%)",
+          }}
+        />
+        <div className="container-page section-pad text-center">
+          <span className="eyebrow">Jornada do atendimento</span>
+          <h1 className="font-display mx-auto mt-5 max-w-3xl text-5xl text-ink md:text-6xl">
+            Como funciona o atendimento
+          </h1>
+          <p className="mx-auto mt-5 max-w-2xl text-lg text-muted">
+            Um fluxo simples e transparente — para você entender cada etapa
+            antes mesmo de contratar.
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/agendar" className="btn btn-primary">
-              Agendar consulta
+        </div>
+      </section>
+
+      <section className="pb-20">
+        <div className="container-page grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {howItWorks.map((step, index) => {
+            const Icon = icons[step.icon] || MessageSquare;
+            return (
+              <article
+                key={step.step}
+                className={`card-lift reveal reveal-delay-${(index % 3) + 1} panel p-7`}
+              >
+                <span className="badge-ico badge-ico-lg badge-ico-gold">
+                  <Icon size={26} />
+                </span>
+                <p className="mt-6 text-xs tracking-[0.22em] text-gold-deep uppercase">
+                  Etapa {step.step}
+                </p>
+                <h3 className="font-display mt-2 text-xl text-ink">
+                  {step.title}
+                </h3>
+                <p className="mt-3 text-sm text-muted">{step.text}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="bg-wine-deep text-paper">
+        <div className="container-page section-pad grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-center">
+          <div>
+            <span className="eyebrow" style={{ color: "var(--gold-soft)" }}>
+              Área do cliente
+            </span>
+            <h2 className="font-display mt-5 text-4xl leading-tight md:text-5xl">
+              Tudo do seu caso em um só lugar
+            </h2>
+            <p className="mt-4 max-w-xl text-mist/90">
+              Depois da contratação, você acessa status do processo, envia
+              documentos, troca mensagens e consulta honorários — com
+              autenticação segura e sigilo total.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/agendar" className="btn btn-gold">
+              Agendar consulta <ArrowRight size={14} />
             </Link>
-            <Link href="/login" className="btn btn-secondary">
+            <Link href="/login" className="btn btn-inverse">
               Acessar área do cliente
             </Link>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </>
   );
 }

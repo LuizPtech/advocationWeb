@@ -28,5 +28,7 @@ export async function ensureSiteSettings() {
     whatsapp: defaultBrand.whatsapp,
     address: defaultBrand.address,
     city: defaultBrand.city,
+    photoUrl: defaultBrand.photoUrl,
+    heroImageUrl: defaultBrand.heroImageUrl,
   });
 }

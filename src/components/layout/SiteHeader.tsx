@@ -20,18 +20,27 @@ export function SiteHeader({ brand }: { brand: Brand }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line/70 bg-[rgba(245,247,248,0.86)] backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-line-soft bg-[rgba(247,237,224,0.82)] backdrop-blur-xl">
       <div className="container-page flex items-center justify-between gap-4 py-4">
-        <Link href="/" className="group min-w-0">
-          <p className="font-display text-2xl leading-none text-ink transition-colors group-hover:text-accent md:text-[1.7rem]">
-            {brand.shortName}
-          </p>
-          <p className="mt-1 text-xs tracking-[0.14em] text-muted uppercase">
-            {brand.title} · {brand.oab}
-          </p>
+        <Link href="/" className="group flex min-w-0 items-center gap-3">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-gold bg-paper-elevated font-display text-xl text-wine">
+            {brand.shortName
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .slice(0, 2)}
+          </span>
+          <span className="min-w-0">
+            <span className="font-display block truncate text-xl leading-none text-ink transition-colors group-hover:text-wine md:text-2xl">
+              {brand.shortName}
+            </span>
+            <span className="mt-1 block truncate text-[0.68rem] tracking-[0.22em] text-muted uppercase">
+              {brand.title} · {brand.oab}
+            </span>
+          </span>
         </Link>
 
-        <nav className="hidden items-center gap-6 lg:flex">
+        <nav className="hidden items-center gap-7 lg:flex">
           {links.map((link) => (
             <Link
               key={link.href}
@@ -65,7 +74,7 @@ export function SiteHeader({ brand }: { brand: Brand }) {
 
       <div
         className={cn(
-          "border-t border-line/70 bg-paper-elevated lg:hidden",
+          "border-t border-line-soft bg-paper-elevated lg:hidden",
           open ? "block" : "hidden",
         )}
       >

@@ -53,7 +53,7 @@ Em **Project → Settings → Environment Variables**, cadastre para Production/
 
 | Nome | Valor |
 |------|--------|
-| `AUTH_SECRET` | `R51ijr76iRaAFOvYsZUkgmOXTAjusjwwGDL7SFS4oNY=` (ou gere outro) |
+| `AUTH_SECRET` | string longa aleatória (`openssl rand -base64 32`) |
 | `AUTH_TRUST_HOST` | `true` |
 | `NEXT_PUBLIC_APP_URL` | `https://advocation-web.vercel.app` |
 | `SUPABASE_URL` | `https://yqzofdehjsskrojditwy.supabase.co` |
