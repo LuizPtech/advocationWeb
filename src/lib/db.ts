@@ -437,6 +437,7 @@ export const db = {
       scheduledAt: string;
       lgpdConsent: boolean;
       userId?: string | null;
+      status?: string;
     }) {
       const row = {
         id: createId(),
@@ -448,7 +449,7 @@ export const db = {
         notes: input.notes || null,
         scheduled_at: input.scheduledAt,
         lgpd_consent: input.lgpdConsent,
-        status: "PENDING",
+        status: input.status || "PENDING",
         user_id: input.userId || null,
       };
       const { data, error } = await supabaseAdmin
@@ -507,6 +508,51 @@ export const db = {
       const { error } = await supabaseAdmin
         .from("bookings")
         .update({ status })
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+    async update(
+      id: string,
+      input: {
+        name?: string;
+        email?: string;
+        phone?: string | null;
+        type?: string;
+        area?: string;
+        notes?: string | null;
+        scheduledAt?: string;
+        status?: string;
+      },
+    ) {
+      const patch: Record<string, unknown> = {};
+      if (input.name !== undefined) patch.name = input.name;
+      if (input.email !== undefined) patch.email = input.email.toLowerCase();
+      if (input.phone !== undefined) patch.phone = input.phone || null;
+      if (input.type !== undefined) patch.type = input.type;
+      if (input.area !== undefined) patch.area = input.area;
+      if (input.notes !== undefined) patch.notes = input.notes || null;
+      if (input.scheduledAt !== undefined)
+        patch.scheduled_at = input.scheduledAt;
+      if (input.status !== undefined) patch.status = input.status;
+      const { error } = await supabaseAdmin
+        .from("bookings")
+        .update(patch)
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+    async findById(id: string) {
+      const { data, error } = await supabaseAdmin
+        .from("bookings")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      return data ? mapBooking(data) : null;
+    },
+    async remove(id: string) {
+      const { error } = await supabaseAdmin
+        .from("bookings")
+        .delete()
         .eq("id", id);
       if (error) throw new Error(error.message);
     },
@@ -996,6 +1042,138 @@ export const db = {
           .single();
       }
       return mapSettings(requireData(attempt.data, attempt.error));
+    },
+  },
+
+  templates: {
+    async list() {
+      const { data, error } = await supabaseAdmin
+        .from("document_templates")
+        .select("*")
+        .order("name", { ascending: true });
+      if (error) {
+        if (error.code === "42P01") return [];
+        throw new Error(error.message);
+      }
+      return (data || []).map((row) => ({
+        id: String(row.id),
+        name: String(row.name),
+        category: String(row.category || "geral"),
+        content: String(row.content || ""),
+        createdAt: String(row.created_at),
+        updatedAt: String(row.updated_at),
+      }));
+    },
+    async findById(id: string) {
+      const { data, error } = await supabaseAdmin
+        .from("document_templates")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      if (!data) return null;
+      return {
+        id: String(data.id),
+        name: String(data.name),
+        category: String(data.category || "geral"),
+        content: String(data.content || ""),
+        createdAt: String(data.created_at),
+        updatedAt: String(data.updated_at),
+      };
+    },
+    async create(input: {
+      name: string;
+      category?: string;
+      content: string;
+    }) {
+      const id = createId();
+      const { error } = await supabaseAdmin.from("document_templates").insert({
+        id,
+        name: input.name,
+        category: input.category || "geral",
+        content: input.content,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw new Error(error.message);
+      return id;
+    },
+    async update(
+      id: string,
+      input: { name: string; category?: string; content: string },
+    ) {
+      const { error } = await supabaseAdmin
+        .from("document_templates")
+        .update({
+          name: input.name,
+          category: input.category || "geral",
+          content: input.content,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+    async remove(id: string) {
+      const { error } = await supabaseAdmin
+        .from("document_templates")
+        .delete()
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+  },
+
+  nav: {
+    async list() {
+      const { data, error } = await supabaseAdmin
+        .from("nav_items")
+        .select("*")
+        .order("position", { ascending: true });
+      if (error) {
+        if (error.code === "42P01") return [];
+        throw new Error(error.message);
+      }
+      return (data || []).map((row) => ({
+        id: String(row.id),
+        label: String(row.label),
+        href: String(row.href),
+        position: Number(row.position || 0),
+        visible: Boolean(row.visible),
+      }));
+    },
+    async listVisible() {
+      const items = await this.list();
+      return items.filter((item) => item.visible);
+    },
+    async create(input: { label: string; href: string; position?: number }) {
+      const { error } = await supabaseAdmin.from("nav_items").insert({
+        id: createId(),
+        label: input.label,
+        href: input.href.startsWith("/") ? input.href : `/${input.href}`,
+        position: input.position ?? 999,
+        visible: true,
+      });
+      if (error) throw new Error(error.message);
+    },
+    async update(
+      id: string,
+      input: { label: string; href: string; position: number; visible: boolean },
+    ) {
+      const { error } = await supabaseAdmin
+        .from("nav_items")
+        .update({
+          label: input.label,
+          href: input.href.startsWith("/") ? input.href : `/${input.href}`,
+          position: input.position,
+          visible: input.visible,
+        })
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+    async remove(id: string) {
+      const { error } = await supabaseAdmin
+        .from("nav_items")
+        .delete()
+        .eq("id", id);
+      if (error) throw new Error(error.message);
     },
   },
 };

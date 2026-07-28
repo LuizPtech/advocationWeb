@@ -6,6 +6,7 @@ import {
   ExternalLink,
   FileText,
   LayoutDashboard,
+  LayoutList,
   LogOut,
   Palette,
   UserCog,
@@ -17,11 +18,13 @@ import { auth, signOut } from "@/lib/auth";
 const nav = [
   { href: "/admin", label: "Visão geral", icon: LayoutDashboard },
   { href: "/admin/site", label: "Editar site", icon: Palette },
+  { href: "/admin/menu", label: "Menu do site", icon: LayoutList },
   { href: "/admin/leads", label: "Leads", icon: UserCog },
   { href: "/admin/agenda", label: "Agenda", icon: Calendar },
   { href: "/admin/casos", label: "Casos", icon: Briefcase },
   { href: "/admin/clientes", label: "Clientes", icon: Users },
   { href: "/admin/financeiro", label: "Financeiro", icon: Wallet },
+  { href: "/admin/modelos", label: "Modelos", icon: FileText },
   { href: "/admin/blog", label: "Blog", icon: FileText },
 ];
 

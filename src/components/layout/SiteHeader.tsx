@@ -5,17 +5,20 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import type { Brand } from "@/lib/brand";
+import type { NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
-const links = [
-  { href: "/sobre", label: "Sobre" },
-  { href: "/areas", label: "Áreas" },
-  { href: "/como-funciona", label: "Como funciona" },
-  { href: "/blog", label: "Blog" },
-  { href: "/contato", label: "Contato" },
-];
+function isExternal(href: string) {
+  return href.startsWith("http://") || href.startsWith("https://");
+}
 
-export function SiteHeader({ brand }: { brand: Brand }) {
+export function SiteHeader({
+  brand,
+  links,
+}: {
+  brand: Brand;
+  links: NavItem[];
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -41,16 +44,32 @@ export function SiteHeader({ brand }: { brand: Brand }) {
         </Link>
 
         <nav className="hidden items-center gap-7 lg:flex">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="nav-link"
-              data-active={pathname.startsWith(link.href)}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) =>
+            isExternal(link.href) ? (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                className="nav-link"
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="nav-link"
+                data-active={
+                  link.href === "/"
+                    ? pathname === "/"
+                    : pathname.startsWith(link.href)
+                }
+              >
+                {link.label}
+              </Link>
+            ),
+          )}
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
@@ -79,16 +98,28 @@ export function SiteHeader({ brand }: { brand: Brand }) {
         )}
       >
         <div className="container-page flex flex-col gap-4 py-4">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-ink-soft"
-              onClick={() => setOpen(false)}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) =>
+            isExternal(link.href) ? (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                className="text-ink-soft"
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-ink-soft"
+                onClick={() => setOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ),
+          )}
           <Link href="/login" onClick={() => setOpen(false)}>
             Entrar
           </Link>

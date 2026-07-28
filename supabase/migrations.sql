@@ -32,3 +32,29 @@ create table if not exists expenses (
 );
 
 alter table expenses enable row level security;
+
+create table if not exists document_templates (
+  id text primary key,
+  name text not null,
+  category text not null default 'geral',
+  content text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table document_templates enable row level security;
+
+create table if not exists nav_items (
+  id text primary key,
+  label text not null,
+  href text not null,
+  position integer not null default 0,
+  visible boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table nav_items enable row level security;
+drop policy if exists "Public read nav" on nav_items;
+create policy "Public read nav"
+  on nav_items for select
+  using (visible = true);
