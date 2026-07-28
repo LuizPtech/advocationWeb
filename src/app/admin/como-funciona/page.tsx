@@ -1,12 +1,27 @@
 import { revalidatePath } from "next/cache";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { ChevronDown, PlusCircle, Trash2 } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { Icon } from "@/components/Icon";
 import { db } from "@/lib/db";
-import { STEP_ICON_CHOICES, getSteps } from "@/lib/content";
+import { STEP_ICON_CHOICES, type Step, getSteps } from "@/lib/content";
 import { howItWorks as defaults } from "@/lib/brand";
 
 export const dynamic = "force-dynamic";
+
+async function installDefaults() {
+  "use server";
+  for (const [index, step] of defaults.entries()) {
+    await db.howItWorks.create({
+      stepNumber: step.step,
+      icon: step.icon,
+      title: step.title,
+      body: step.text,
+      position: index,
+    });
+  }
+  revalidatePath("/admin/como-funciona");
+  revalidatePath("/", "layout");
+}
 
 export default async function AdminComoFuncionaPage() {
   const items = await getSteps();
@@ -16,48 +31,70 @@ export default async function AdminComoFuncionaPage() {
   return (
     <AdminShell
       title="Como funciona"
-      subtitle="Etapas mostradas na home e em /como-funciona."
+      subtitle="Etapas exibidas na home e em /como-funciona."
     >
       {!isPersisted ? (
         <form
-          className="panel mb-6 p-6"
-          action={async () => {
-            "use server";
-            for (const [index, step] of defaults.entries()) {
-              await db.howItWorks.create({
-                stepNumber: step.step,
-                icon: step.icon,
-                title: step.title,
-                body: step.text,
-                position: index,
-              });
-            }
-            revalidatePath("/admin/como-funciona");
-            revalidatePath("/", "layout");
-          }}
+          className="panel mb-6 flex flex-wrap items-center justify-between gap-4 p-6"
+          action={installDefaults}
         >
-          <h2 className="font-display text-2xl text-ink">
+          <div>
+            <h2 className="font-display text-xl text-ink">
+              Ainda usando etapas padrão
+            </h2>
+            <p className="mt-1 text-sm text-muted">
+              Instale para começar a editar (4 etapas).
+            </p>
+          </div>
+          <button type="submit" className="btn btn-gold">
             Instalar etapas padrão
-          </h2>
-          <p className="mt-2 text-muted">
-            Começa com 4 etapas (Contato, Consulta, Estratégia,
-            Acompanhamento). Depois você edita à vontade.
-          </p>
-          <button type="submit" className="btn btn-gold mt-4">
-            Instalar
           </button>
         </form>
       ) : null}
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {items.map((item) => (
+          <StepEditor key={item.id} item={item} readOnly={!isPersisted} />
+        ))}
+      </div>
+
+      {isPersisted ? <NewStepCard nextPosition={items.length + 1} /> : null}
+    </AdminShell>
+  );
+}
+
+function StepEditor({ item, readOnly }: { item: Step; readOnly: boolean }) {
+  return (
+    <details className="editor-card">
+      <summary>
+        <span className="badge-ico badge-ico-gold">
+          <Icon name={item.icon} size={20} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-display text-lg text-ink truncate">
+            <span className="text-gold-deep">{item.stepNumber}.</span>{" "}
+            {item.title}
+          </p>
+          <div className="mt-1 flex items-center gap-2 text-xs text-muted">
+            <span className="chip chip-muted">Ordem {item.position}</span>
+          </div>
+        </div>
+        <ChevronDown size={18} className="caret shrink-0" />
+      </summary>
+
+      <div className="editor-body">
+        {readOnly ? (
+          <p className="text-sm text-muted">
+            Somente leitura — instale as etapas padrão primeiro.
+          </p>
+        ) : (
           <form
-            key={item.id}
-            className="panel p-5"
             action={async (formData) => {
               "use server";
               await db.howItWorks.update(item.id, {
-                stepNumber: String(formData.get("stepNumber") || item.stepNumber),
+                stepNumber: String(
+                  formData.get("stepNumber") || item.stepNumber,
+                ),
                 icon: String(formData.get("icon") || item.icon),
                 title: String(formData.get("title") || item.title),
                 body: String(formData.get("body") || item.body),
@@ -67,150 +104,145 @@ export default async function AdminComoFuncionaPage() {
               revalidatePath("/", "layout");
             }}
           >
-            <div className="flex items-start gap-4">
-              <span className="badge-ico badge-ico-gold">
-                <Icon name={item.icon} size={22} />
-              </span>
-              <div className="flex-1 grid gap-3 md:grid-cols-[100px_100px_1fr]">
-                <div className="field">
-                  <label>Nº</label>
-                  <input
-                    name="stepNumber"
-                    defaultValue={item.stepNumber}
-                    disabled={!isPersisted}
-                  />
-                </div>
-                <div className="field">
-                  <label>Ícone</label>
-                  <select
-                    name="icon"
-                    defaultValue={item.icon}
-                    disabled={!isPersisted}
-                  >
-                    {STEP_ICON_CHOICES.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="field">
-                  <label>Título</label>
-                  <input
-                    name="title"
-                    defaultValue={item.title}
-                    disabled={!isPersisted}
-                  />
-                </div>
+            <div className="grid gap-5 md:grid-cols-[120px_1fr_1fr_100px]">
+              <div className="field">
+                <label>Nº</label>
+                <input
+                  name="stepNumber"
+                  defaultValue={item.stepNumber}
+                  placeholder="01"
+                />
               </div>
-              <div className="w-20">
-                <div className="field">
-                  <label>Ordem</label>
-                  <input
-                    type="number"
-                    name="position"
-                    defaultValue={item.position}
-                    disabled={!isPersisted}
-                  />
-                </div>
+              <div className="field">
+                <label>Título</label>
+                <input name="title" defaultValue={item.title} required />
+              </div>
+              <div className="field">
+                <label>Ícone</label>
+                <select name="icon" defaultValue={item.icon}>
+                  {STEP_ICON_CHOICES.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label>Ordem</label>
+                <input
+                  type="number"
+                  name="position"
+                  defaultValue={item.position}
+                />
+              </div>
+              <div className="field md:col-span-4">
+                <label>Descrição</label>
+                <textarea
+                  name="body"
+                  rows={3}
+                  defaultValue={item.body}
+                  required
+                />
               </div>
             </div>
-            <div className="field mt-3">
-              <label>Descrição</label>
-              <textarea
-                name="body"
-                rows={2}
-                defaultValue={item.body}
-                disabled={!isPersisted}
-              />
-            </div>
-            {isPersisted ? (
-              <div className="mt-3 flex gap-3">
-                <button type="submit" className="btn btn-ghost text-sm">
-                  Salvar
-                </button>
+
+            <div className="mt-6 flex items-center justify-between gap-3 border-t border-line-soft pt-5">
+              <form
+                action={async () => {
+                  "use server";
+                  await db.howItWorks.remove(item.id);
+                  revalidatePath("/admin/como-funciona");
+                  revalidatePath("/", "layout");
+                }}
+              >
                 <button
                   type="submit"
-                  formAction={async () => {
-                    "use server";
-                    await db.howItWorks.remove(item.id);
-                    revalidatePath("/admin/como-funciona");
-                    revalidatePath("/", "layout");
-                  }}
-                  className="inline-flex items-center gap-1 text-sm text-muted hover:text-[var(--danger)]"
+                  className="inline-flex items-center gap-1 text-xs text-muted hover:text-[var(--danger)]"
                 >
-                  <Trash2 size={14} /> Remover
+                  <Trash2 size={14} /> Excluir
                 </button>
-              </div>
-            ) : null}
-          </form>
-        ))}
-      </div>
-
-      {isPersisted ? (
-        <details className="panel mt-8 p-6" open>
-          <summary className="cursor-pointer font-semibold text-ink">
-            <PlusCircle size={16} className="mr-1 inline" /> Nova etapa
-          </summary>
-          <form
-            className="mt-4 grid gap-3 md:grid-cols-[100px_140px_1fr_100px_auto]"
-            action={async (formData) => {
-              "use server";
-              const stepNumber = String(formData.get("stepNumber") || "").trim();
-              const icon = String(formData.get("icon") || "message");
-              const title = String(formData.get("title") || "").trim();
-              const body = String(formData.get("body") || "").trim();
-              const pos = Number(formData.get("position") || 999);
-              if (!stepNumber || !title || !body) return;
-              await db.howItWorks.create({
-                stepNumber,
-                icon,
-                title,
-                body,
-                position: pos,
-              });
-              revalidatePath("/admin/como-funciona");
-              revalidatePath("/", "layout");
-            }}
-          >
-            <div className="field">
-              <label>Nº</label>
-              <input name="stepNumber" required placeholder="05" />
-            </div>
-            <div className="field">
-              <label>Ícone</label>
-              <select name="icon" defaultValue="message">
-                {STEP_ICON_CHOICES.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
-              <label>Título</label>
-              <input name="title" required />
-            </div>
-            <div className="field">
-              <label>Ordem</label>
-              <input
-                type="number"
-                name="position"
-                defaultValue={items.length + 1}
-              />
-            </div>
-            <div className="flex items-end">
+              </form>
               <button type="submit" className="btn btn-primary text-sm">
-                Adicionar
+                Salvar alterações
               </button>
             </div>
-            <div className="field md:col-span-5">
-              <label>Descrição</label>
-              <textarea name="body" rows={2} required />
-            </div>
           </form>
-        </details>
-      ) : null}
-    </AdminShell>
+        )}
+      </div>
+    </details>
+  );
+}
+
+function NewStepCard({ nextPosition }: { nextPosition: number }) {
+  return (
+    <details className="editor-card mt-6">
+      <summary>
+        <span className="badge-ico badge-ico-wine">
+          <PlusCircle size={20} />
+        </span>
+        <div className="flex-1">
+          <p className="font-display text-lg text-ink">Nova etapa</p>
+          <p className="mt-1 text-xs text-muted">
+            Aparece no fluxo "Como funciona" assim que salvar.
+          </p>
+        </div>
+        <ChevronDown size={18} className="caret shrink-0" />
+      </summary>
+      <div className="editor-body">
+        <form
+          className="grid gap-5 md:grid-cols-[120px_1fr_1fr_100px]"
+          action={async (formData) => {
+            "use server";
+            const stepNumber = String(formData.get("stepNumber") || "").trim();
+            const icon = String(formData.get("icon") || "message");
+            const title = String(formData.get("title") || "").trim();
+            const body = String(formData.get("body") || "").trim();
+            const pos = Number(formData.get("position") || nextPosition);
+            if (!stepNumber || !title || !body) return;
+            await db.howItWorks.create({
+              stepNumber,
+              icon,
+              title,
+              body,
+              position: pos,
+            });
+            revalidatePath("/admin/como-funciona");
+            revalidatePath("/", "layout");
+          }}
+        >
+          <div className="field">
+            <label>Nº</label>
+            <input name="stepNumber" placeholder="05" required />
+          </div>
+          <div className="field">
+            <label>Título</label>
+            <input name="title" required />
+          </div>
+          <div className="field">
+            <label>Ícone</label>
+            <select name="icon" defaultValue="message">
+              {STEP_ICON_CHOICES.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label>Ordem</label>
+            <input type="number" name="position" defaultValue={nextPosition} />
+          </div>
+          <div className="field md:col-span-4">
+            <label>Descrição</label>
+            <textarea name="body" rows={3} required />
+          </div>
+          <div className="md:col-span-4 flex justify-end">
+            <button type="submit" className="btn btn-primary text-sm">
+              Adicionar etapa
+            </button>
+          </div>
+        </form>
+      </div>
+    </details>
   );
 }

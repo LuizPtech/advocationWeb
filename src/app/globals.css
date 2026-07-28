@@ -488,6 +488,88 @@ a {
   color: #fff;
 }
 
+.admin-section {
+  margin-top: 1.25rem;
+  margin-bottom: 0.35rem;
+  padding: 0 0.75rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(236, 220, 184, 0.55);
+}
+
+.admin-section:first-of-type {
+  margin-top: 0;
+}
+
+/* Admin editor cards */
+.editor-card {
+  background: #fff;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.editor-card:hover {
+  border-color: var(--gold-soft);
+}
+
+.editor-card summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.editor-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.editor-card[open] summary {
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--paper-elevated);
+}
+
+.editor-card .caret {
+  margin-left: auto;
+  color: var(--muted);
+  transition: transform 200ms ease;
+}
+
+.editor-card[open] .caret {
+  transform: rotate(180deg);
+  color: var(--wine);
+}
+
+.editor-body {
+  padding: 1.5rem 1.25rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 999px;
+  background: var(--gold-soft);
+  color: var(--gold-deep);
+}
+
+.chip-muted {
+  background: var(--paper-warm);
+  color: var(--muted);
+}
+
+.chip-wine {
+  background: var(--wine-soft);
+  color: var(--wine-deep);
+}
+
 .stat-card {
   border-radius: var(--radius-lg);
   background: #fff;

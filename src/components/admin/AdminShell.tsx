@@ -67,14 +67,11 @@ export async function AdminShell({
           </div>
         </div>
 
-        <nav className="mt-8 flex flex-col gap-1">
+        <nav className="mt-8 flex flex-col gap-0.5">
           {nav.map((item, index) => {
             if ("section" in item) {
               return (
-                <p
-                  key={`section-${index}`}
-                  className="mt-4 mb-1 px-3 text-[0.65rem] tracking-[0.22em] text-gold-soft/60 uppercase"
-                >
+                <p key={`section-${index}`} className="admin-section">
                   {item.section}
                 </p>
               );
